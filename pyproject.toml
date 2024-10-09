@@ -14,7 +14,7 @@ pre-commit = "^4.0.1"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["google.auth.transport", "google.oauth2"]
+module = ["google.auth.transport", "google.oauth2", "gunicorn.arbiter", "prometheus_client"]
 ignore_missing_imports = true
 
 [build-system]

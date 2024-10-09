@@ -29,12 +29,12 @@ setup-db: guard-POSTGRES_USER guard-POSTGRES_PASSWORD guard-POSTGRES_DB
 	-@docker rm pg-hew-ai-local
 	@docker system prune -f
 	@sleep 2
-	@docker run --name pg-hew-ai \
-		-e POSTGRES_USER=postgres \
-		-e POSTGRES_PASSWORD=postgres \
-		-e POSTGRES_DB=postgres \
+	@docker run --name pg-hew-ai-local \
+		-e POSTGRES_USER=$(POSTGRES_USER) \
+		-e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+		-e POSTGRES_DB=$(POSTGRES_DB) \
 		-p 5432:5432 \
-		-d postgres:16.4
+		-d pgvector/pgvector:pg16
 	@sleep 5
 	set -a && \
         source "$(CURDIR)/deployment/docker-compose/.base.env" && \
