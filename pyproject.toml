@@ -10,6 +10,13 @@ python = "^3.12"
 pre-commit = "^4.0.1"
 
 
+[tool.mypy]
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["google.auth.transport", "google.oauth2"]
+ignore_missing_imports = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
