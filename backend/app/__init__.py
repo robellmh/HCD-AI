@@ -37,7 +37,7 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan)
 
-    app.include_router(search_router)
+    app.include_router(document_handling.router)
 
     origins = [
         "http://localhost",
