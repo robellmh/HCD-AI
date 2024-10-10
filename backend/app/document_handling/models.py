@@ -6,33 +6,22 @@ from datetime import datetime, timezone
 from io import BytesIO
 from typing import List, Optional
 
-
-from pgvector.sqlalchemy import Vector
-from ..models import Base
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import (
-    DateTime,
-    Index,
-    Integer,
-    String,
-    Text
-)
-from sqlalchemy.ext.asyncio import AsyncSession
-
 import PyPDF2
-
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import DateTime, Index, Integer, String, Text
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..config import (
-                      PGVECTOR_VECTOR_SIZE,
-                      EMBEDDING_MODEL_NAME,
-                      PGVECTOR_M,
-                      PGVECTOR_EF_CONSTRUCTION,
-                      PGVECTOR_DISTANCE
+    EMBEDDING_MODEL_NAME,
+    PGVECTOR_DISTANCE,
+    PGVECTOR_EF_CONSTRUCTION,
+    PGVECTOR_M,
+    PGVECTOR_VECTOR_SIZE,
 )
-
+from ..models import Base
 from ..utils import setup_logger
-
 
 logger = setup_logger()
 
@@ -55,34 +44,19 @@ class DocumentDB(Base):
         ),
     )
 
-    content_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, nullable=False
-    )
+    content_id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
 
-    file_name: Mapped[str] = mapped_column(
-        String(length=150),
-        nullable=False
-    )
-    chunk_id: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False
-    )
-    text: Mapped[str] = mapped_column(
-        Text,
-        nullable=False
-    )
+    file_name: Mapped[str] = mapped_column(String(length=150), nullable=False)
+    chunk_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
     embedding_vector: Mapped[Vector] = mapped_column(
-        Vector(int(PGVECTOR_VECTOR_SIZE)),
-        nullable=False
+        Vector(int(PGVECTOR_VECTOR_SIZE)), nullable=False
     )
     created_datetime_utc: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False
+        DateTime(timezone=True), nullable=False
     )
     updated_datetime_utc: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        onupdate=datetime.now(timezone.utc),
-        nullable=False
+        DateTime(timezone=True), onupdate=datetime.now(timezone.utc), nullable=False
     )
 
 
@@ -162,7 +136,8 @@ async def parse_file(file: bytes) -> List[str]:
                     "No text could be extracted from the uploaded PDF file."
                 )
         except Exception as e:
-            raise Exception(f"Failed to parse PDF file: {e}")
+            raise Exception(f"Failed to parse PDF file: {e}") from e
+
     else:
         # Assume it's text
         try:
@@ -172,9 +147,10 @@ async def parse_file(file: bytes) -> List[str]:
                     "No text could be extracted from the uploaded text file."
                 )
             chunk_size = 1000
-            chunks = [text[i: i + chunk_size] for i in range(0, len(text), chunk_size)]
-        except UnicodeDecodeError:
-            raise Exception("File must be a UTF-8 encoded text file.")
+            chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+        except Exception as e:
+            logger.error(f"Embedding failed: {str(e)}")
+            raise Exception(f"Embedding failed: {str(e)}") from e
 
     return chunks
 
@@ -210,6 +186,6 @@ async def create_embeddings(chunks: List[str]) -> List[List[float]]:
         logger.info("Embeddings generated successfully")
     except Exception as e:
         logger.error(f"Embedding failed: {str(e)}")
-        raise Exception(f"Embedding failed: {str(e)}")
+        raise Exception(f"Embedding failed: {str(e)}") from e
 
     return embeddings

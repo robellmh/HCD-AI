@@ -1,15 +1,16 @@
 """Initial migration
 
 Revision ID: 8e185a868bcc
-Revises: 
+Revises:
 Create Date: 2024-10-10 17:32:47.987166
 
 """
 
 from typing import Sequence, Union
+
 import pgvector
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from app.config import (
     PGVECTOR_DISTANCE,
     PGVECTOR_EF_CONSTRUCTION,

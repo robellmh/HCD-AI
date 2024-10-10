@@ -5,12 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis import asyncio as aioredis
 
-from .config import REDIS_HOST
-from .utils import setup_logger
-
 from . import (
     document_handling,
 )
+from .config import REDIS_HOST
+from .utils import setup_logger
 
 logger = setup_logger()
 
