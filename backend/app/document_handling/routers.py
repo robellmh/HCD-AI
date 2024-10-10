@@ -1,8 +1,5 @@
 """This module contains the FastAPI router for the document handling endpoints."""
 
-from typing import List
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,7 +41,7 @@ async def upload_document(
         logger.error(f"Error reading the uploaded file: {e}")
         raise HTTPException(status_code=400, detail="Failed to read the uploaded file.")
 
-    # Parse content into chunks
+    # Parse content into page-size chunks
     try:
         chunks = await parse_file(content)
         logger.info("Document parsed successfully.")
@@ -64,7 +61,7 @@ async def upload_document(
         logger.error(f"Error creating embeddings: {e}")
         raise HTTPException(status_code=500, detail="Failed to create embeddings.")
 
-    # Prepare DocumentDB instances
+    # Convert to DocumentDB schema
     documents = []
     for chunk_id, (text, embedding_vector) in enumerate(zip(chunks, embeddings)):
         document = DocumentDB(
@@ -75,7 +72,7 @@ async def upload_document(
         )
         documents.append(document)
 
-    # Save documents to the database
+    # Save documents to the DB
     try:
         await save_document_to_db(documents=documents, asession=asession)
         logger.info("Embeddings stored successfully in the database.")
