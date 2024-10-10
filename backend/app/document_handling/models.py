@@ -53,8 +53,10 @@ class DocumentDB(Base):
     def __repr__(self) -> str:
         """String representation of the DocumentDB object."""
         return (
-            f"DocumentDB(uuid={self.uuid}, file_name={self.file_name}, "
-            f"chunk_id={self.chunk_id}, created_datetime_utc={self.created_datetime_utc})"
+            f"""DocumentDB(uuid={self.uuid},
+            file_name={self.file_name},
+            chunk_id={self.chunk_id},
+            created_datetime_utc={self.created_datetime_utc})"""
         )
 
 
@@ -119,9 +121,8 @@ async def parse_file(file: bytes) -> List[str]:
     List[str]
         A list of text chunks extracted from the file.
     """
-    # Check if the file is a PDF by inspecting the magic number
+    # Check if the file is a PDF
     if file[:5] == b"%PDF-":
-        # Handle PDF files
         try:
             pdf_reader = PyPDF2.PdfReader(BytesIO(file))
             chunks = []
@@ -137,16 +138,15 @@ async def parse_file(file: bytes) -> List[str]:
         except Exception as e:
             raise Exception(f"Failed to parse PDF file: {e}")
     else:
-        # Assume it's a text file
+        # Assume it's text
         try:
             text = file.decode("utf-8")
             if not text.strip():
                 raise Exception(
                     "No text could be extracted from the uploaded text file."
                 )
-            # Split the text into chunks
-            chunk_size = 1000  # Adjust chunk size as needed
-            chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+            chunk_size = 1000
+            chunks = [text[i: i + chunk_size] for i in range(0, len(text), chunk_size)]
         except UnicodeDecodeError:
             raise Exception("File must be a UTF-8 encoded text file.")
 
@@ -177,19 +177,11 @@ async def create_embeddings(chunks: List[str]) -> List[List[float]]:
 
     try:
         logger.info(
-            f"""Generating embeddings for {len(chunks)} chunks using 
+            f"""Generating embeddings for {len(chunks)} chunks using
                     async batch processing"""
         )
         embeddings = await embed_model.aget_text_embedding_batch(chunks)
         logger.info("Embeddings generated successfully")
-        # Check if embeddings are in the correct format
-        if not isinstance(embeddings, list):
-            raise Exception("Embeddings are not a list")
-        if not all(isinstance(e, list) for e in embeddings):
-            raise Exception("Embeddings are not a list of lists")
-        if not all(isinstance(v, float) for e in embeddings for v in e):
-            raise Exception("Embeddings contain non-float values")
-
     except Exception as e:
         logger.error(f"Embedding failed: {str(e)}")
         raise Exception(f"Embedding failed: {str(e)}")
