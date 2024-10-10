@@ -38,7 +38,7 @@ logger = setup_logger()
 
 
 class DocumentDB(Base):
-    """ORM for managing documents."""
+    """ORM for managing document indexing."""
 
     __tablename__ = "documents"
 
