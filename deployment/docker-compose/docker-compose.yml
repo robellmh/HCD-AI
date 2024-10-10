@@ -23,3 +23,6 @@ services:
     ports: # Expose the port to port 6380 on the host machine for debugging
       - "6380:6379"
     restart: always
+
+volumes:
+  temp:
