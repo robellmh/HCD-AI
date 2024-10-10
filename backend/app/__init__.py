@@ -9,6 +9,10 @@ from .config import REDIS_HOST
 from .search import router as search_router
 from .utils import setup_logger
 
+from . import (
+    document_handling,
+)
+
 logger = setup_logger()
 
 
