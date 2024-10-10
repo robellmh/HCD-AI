@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan)
 
+    # All routers go here eventually
     app.include_router(document_handling.router)
 
     origins = [

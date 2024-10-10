@@ -13,7 +13,7 @@ BACKEND_ROOT_PATH = os.environ.get("BACKEND_ROOT_PATH", "")
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
 
 # PGVector
-PGVECTOR_VECTOR_SIZE = os.environ.get("PGVECTOR_VECTOR_SIZE", 1024)
+PGVECTOR_VECTOR_SIZE = os.environ.get("PGVECTOR_VECTOR_SIZE", 1024)  # gte-large-en-v1.5
 EMBEDDING_MODEL_NAME = os.environ.get(
     "EMBEDDING_MODEL_NAME", "Alibaba-NLP/gte-large-en-v1.5"
 )
