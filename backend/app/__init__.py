@@ -8,6 +8,10 @@ from redis import asyncio as aioredis
 from .config import REDIS_HOST
 from .utils import setup_logger
 
+from . import (
+    document_handling,
+)
+
 logger = setup_logger()
 
 
@@ -31,6 +35,8 @@ def create_app() -> FastAPI:
     Create a FastAPI application with the experiments router.
     """
     app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan)
+
+    app.include_router(document_handling.router)
 
     origins = [
         "http://localhost",
