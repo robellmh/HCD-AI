@@ -9,6 +9,19 @@ readme = "README.md"
 python = "^3.12"
 pre-commit = "^4.0.1"
 
+[tool.ruff]
+lint.select = ["E", "F", "B", "Q", "I"]
+line-length = 88
+lint.ignore = ["B008"]  # Do not perform function calls in argument defaults.
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends","typer.Option"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core_backend"]
+
+[tool.isort]
+known_first_party = ["core_backend"]
 
 [tool.mypy]
 disallow_untyped_defs = true
