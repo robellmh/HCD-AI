@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from datetime import datetime, timezone
 from ..database import get_async_session
 from ..utils import setup_logger
 from .models import (
@@ -69,6 +70,8 @@ async def upload_document(
             chunk_id=chunk_id,
             text=text,
             embedding_vector=embedding_vector,
+            created_datetime_utc=datetime.now(timezone.utc),
+            updated_datetime_utc=datetime.now(timezone.utc),
         )
         documents.append(document)
 
@@ -82,10 +85,7 @@ async def upload_document(
             status_code=500, detail="Failed to save documents to the database."
         )
 
-    document_ids = [doc.uuid for doc in documents]
-
     return DocumentResponse(
         status="success",
         message="Document uploaded and embeddings stored.",
-        document_ids=document_ids,
-    )
+        document_ids=[doc.content_id for doc in documents])

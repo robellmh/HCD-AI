@@ -2,8 +2,6 @@
 serialization."""
 
 from datetime import datetime
-from typing import List
-from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -14,7 +12,6 @@ class DocumentCreate(BaseModel):
 
 
 class Document(BaseModel):
-    uuid: UUID
     file_name: str
     chunk_id: int
     text: str
@@ -30,4 +27,4 @@ class DocumentChunk(BaseModel):
 class DocumentResponse(BaseModel):
     status: str
     message: str
-    document_ids: List[UUID]
+    document_ids: list[int]

@@ -5,25 +5,32 @@ database helper functions such as saving, updating, deleting, and retrieving doc
 from datetime import datetime, timezone
 from io import BytesIO
 from typing import List, Optional
-from uuid import uuid4
+
 
 from pgvector.sqlalchemy import Vector
 from ..models import Base
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import (
-    Column,
     DateTime,
+    Index,
     Integer,
     String,
-    Text,
+    Text
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import PyPDF2
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-from ..config import PGVECTOR_VECTOR_SIZE, EMBEDDING_MODEL_NAME
+from ..config import (
+                      PGVECTOR_VECTOR_SIZE,
+                      EMBEDDING_MODEL_NAME,
+                      PGVECTOR_M,
+                      PGVECTOR_EF_CONSTRUCTION,
+                      PGVECTOR_DISTANCE
+)
+
 from ..utils import setup_logger
 
 
@@ -35,29 +42,48 @@ class DocumentDB(Base):
 
     __tablename__ = "documents"
 
-    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    file_name = Column(String(length=255), nullable=False)
-    chunk_id = Column(Integer, nullable=False)
-    text = Column(Text, nullable=False)
-    embedding_vector = Column(Vector(int(PGVECTOR_VECTOR_SIZE)), nullable=False)
-    created_datetime_utc = Column(
-        DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False
-    )
-    updated_datetime_utc = Column(
-        DateTime(timezone=True),
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc),
-        nullable=False,
+    __table_args__ = (
+        Index(
+            "documents_embedding_idx",
+            "embedding_vector",
+            postgresql_using="hnsw",
+            postgresql_with={
+                "M": PGVECTOR_M,
+                "ef_construction": PGVECTOR_EF_CONSTRUCTION,
+            },
+            postgresql_ops={"embedding": PGVECTOR_DISTANCE},
+        ),
     )
 
-    def __repr__(self) -> str:
-        """String representation of the DocumentDB object."""
-        return (
-            f"""DocumentDB(uuid={self.uuid},
-            file_name={self.file_name},
-            chunk_id={self.chunk_id},
-            created_datetime_utc={self.created_datetime_utc})"""
-        )
+    content_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, nullable=False
+    )
+
+    file_name: Mapped[str] = mapped_column(
+        String(length=150),
+        nullable=False
+    )
+    chunk_id: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+    text: Mapped[str] = mapped_column(
+        Text,
+        nullable=False
+    )
+    embedding_vector: Mapped[Vector] = mapped_column(
+        Vector(int(PGVECTOR_VECTOR_SIZE)),
+        nullable=False
+    )
+    created_datetime_utc: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False
+    )
+    updated_datetime_utc: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        onupdate=datetime.now(timezone.utc),
+        nullable=False
+    )
 
 
 async def save_document_to_db(
@@ -85,15 +111,15 @@ async def save_document_to_db(
 
 async def get_document_from_db(
     *,
-    uuid: str,
+    content_id: int,
     asession: AsyncSession,
 ) -> Optional[DocumentDB]:
     """Retrieve a document from the database.
 
     Parameters
     ----------
-    uuid
-        The UUID of the document to retrieve.
+    content_id
+        The content_id of the document to retrieve.
     asession
         AsyncSession object for database transactions.
 
@@ -102,7 +128,7 @@ async def get_document_from_db(
     Optional[DocumentDB]
         The DocumentDB instance if found, else None.
     """
-    return await asession.get(DocumentDB, uuid)
+    return await asession.get(DocumentDB, content_id)
 
 
 async def parse_file(file: bytes) -> List[str]:
