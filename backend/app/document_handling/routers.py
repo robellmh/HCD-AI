@@ -27,7 +27,7 @@ router = APIRouter(prefix="/document_handling", tags=[TAG_METADATA["name"]])
 async def upload_document(
     file: UploadFile = File(...),
     asession: AsyncSession = Depends(get_async_session),
-):
+) -> DocumentResponse:
     """
     Upload a document, process it into chunks, embed each chunk,
     and store embeddings in PostgreSQL using pgvector.

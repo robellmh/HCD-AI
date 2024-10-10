@@ -27,7 +27,8 @@ known_first_party = ["core_backend"]
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["google.auth.transport", "google.oauth2", "gunicorn.arbiter", "prometheus_client"]
+module = ["google.auth.transport", "google.oauth2", "gunicorn.arbiter", "prometheus_client",
+"pgvector.sqlalchemy", "llama_index.embeddings.huggingface"]
 ignore_missing_imports = true
 
 [build-system]
