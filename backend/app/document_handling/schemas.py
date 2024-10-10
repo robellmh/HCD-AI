@@ -1,4 +1,5 @@
-"""This module contains the Pydantic models (schemas) for data validation and serialization."""
+"""This module contains the Pydantic models (schemas) for data validation and 
+serialization."""
 
 from datetime import datetime
 from typing import List
