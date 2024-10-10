@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis import asyncio as aioredis
 
 from .config import REDIS_HOST
-from .search import router as search_router
 from .utils import setup_logger
 
 from . import (
@@ -37,7 +36,7 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan)
 
-    app.include_router(search_router)
+    app.include_router(document_handling.router)
 
     origins = [
         "http://localhost",
