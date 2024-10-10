@@ -33,7 +33,7 @@ logger = setup_logger()
 class DocumentDB(Base):
     """ORM for managing documents."""
 
-    __tablename__ = "documents"
+    __tablename__ = "document_index"
 
     uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     file_name = Column(String(length=255), nullable=False)
