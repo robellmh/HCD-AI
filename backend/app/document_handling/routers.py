@@ -50,12 +50,16 @@ async def upload_document(
         logger.info("Document parsed successfully.")
     except Exception as e:
         logger.error(f"Error parsing the document: {e}")
-        raise HTTPException(status_code=400, detail=f"Failed to parse the document: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Failed to parse the document: {e}"
+        )
 
     # Create embeddings for each chunk
     try:
         embeddings = await create_embeddings(chunks)
-        logger.info(f"All chunks embedded successfully. Total chunks: {len(embeddings)}")
+        logger.info(
+            f"All chunks embedded successfully. Total chunks: {len(embeddings)}"
+        )
     except Exception as e:
         logger.error(f"Error creating embeddings: {e}")
         raise HTTPException(status_code=500, detail="Failed to create embeddings.")
@@ -77,7 +81,9 @@ async def upload_document(
         logger.info("Embeddings stored successfully in the database.")
     except Exception as e:
         logger.error(f"Error saving documents to the database: {e}")
-        raise HTTPException(status_code=500, detail="Failed to save documents to the database.")
+        raise HTTPException(
+            status_code=500, detail="Failed to save documents to the database."
+        )
 
     document_ids = [doc.uuid for doc in documents]
 

@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import PyPDF2
 
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding 
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 from ..config import PGVECTOR_VECTOR_SIZE, EMBEDDING_MODEL_NAME
 from ..utils import setup_logger
@@ -106,6 +106,9 @@ async def get_document_from_db(
 async def parse_file(file: bytes) -> List[str]:
     """Parse the content of an uploaded file into chunks.
 
+    For PDFs, each page is treated as its own chunk.
+    For text files, the content is split into chunks of fixed size.
+
     Parameters
     ----------
     file : bytes
@@ -116,33 +119,37 @@ async def parse_file(file: bytes) -> List[str]:
     List[str]
         A list of text chunks extracted from the file.
     """
-    text = ""
-
     # Check if the file is a PDF by inspecting the magic number
-    if file[:5] == b'%PDF-':
+    if file[:5] == b"%PDF-":
         # Handle PDF files
         try:
             pdf_reader = PyPDF2.PdfReader(BytesIO(file))
+            chunks = []
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 page_text = page.extract_text()
-                if page_text:
-                    text += page_text
+                if page_text and page_text.strip():
+                    chunks.append(page_text.strip())
+            if not chunks:
+                raise Exception(
+                    "No text could be extracted from the uploaded PDF file."
+                )
         except Exception as e:
             raise Exception(f"Failed to parse PDF file: {e}")
     else:
         # Assume it's a text file
         try:
-            text = file.decode('utf-8')
+            text = file.decode("utf-8")
+            if not text.strip():
+                raise Exception(
+                    "No text could be extracted from the uploaded text file."
+                )
+            # Split the text into chunks
+            chunk_size = 1000  # Adjust chunk size as needed
+            chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
         except UnicodeDecodeError:
             raise Exception("File must be a UTF-8 encoded text file.")
 
-    if not text.strip():
-        raise Exception("No text could be extracted from the uploaded file.")
-
-    # Split the text into chunks
-    chunk_size = 1000  # Adjust chunk size as needed
-    chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
     return chunks
 
 
@@ -169,8 +176,10 @@ async def create_embeddings(chunks: List[str]) -> List[List[float]]:
     )
 
     try:
-        logger.info(f"""Generating embeddings for {len(chunks)} chunks using 
-                    async batch processing""")
+        logger.info(
+            f"""Generating embeddings for {len(chunks)} chunks using 
+                    async batch processing"""
+        )
         embeddings = await embed_model.aget_text_embedding_batch(chunks)
         logger.info("Embeddings generated successfully")
         # Check if embeddings are in the correct format
