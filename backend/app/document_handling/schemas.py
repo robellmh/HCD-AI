@@ -10,7 +10,7 @@ from pydantic import BaseModel
 class DocumentCreate(BaseModel):
     file_name: str
     content: bytes
-    
+
 
 class Document(BaseModel):
     uuid: UUID
