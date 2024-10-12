@@ -1,9 +1,14 @@
 # Welcome to **AI-for-HEWs** Documentation
 
-This solution deploy a RAG-based service for Health Extension Worker in Ethiopia.
+For full documentation, clone repository and run the following command:
 
+```bash
+mkdocs serve
+```
 
-### Quick setup
+# Quick Setup with Docker Compose
+
+## Quick setup
 
 !!! warning "You need to have installed [Docker](https://docs.docker.com/get-docker/)"
 
@@ -45,22 +50,3 @@ You can now view the the API documentation at
 ```shell
 docker compose -f docker-compose.yml -p hew-ai-stack down
 ```
-
-### Development setup
-
-1. Ensure you have `conda` installed
-2. Run `make fresh-env` to create a new conda environment and install the dependencies
-3. Switch to the new environment
-
-```shell
-conda activate hew-ai
-```
-
-4. Install pre-commit
-
-```shell
-pre-commit install
-```
-
-5. Run `make setup-dev` to start containers for postgres and redis locally
-6. Navigate to `backend` and run `python main.py` to start the FastAPI backend server
