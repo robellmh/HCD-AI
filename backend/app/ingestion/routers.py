@@ -97,7 +97,9 @@ async def parse_file(file: bytes) -> list[str]:
         # Assume it's text
         text = file.decode("utf-8")
         if not text.strip():
-            raise Exception("No text could be extracted from the uploaded text file.")
+            raise RuntimeError(
+                "No text could be extracted from the uploaded text file."
+            )
         chunk_size = 1000
         chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
