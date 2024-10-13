@@ -1,4 +1,4 @@
-"""Initial migration
+"""Create document tables
 
 Revision ID: 8e185a868bcc
 Revises:
@@ -34,6 +34,7 @@ def upgrade() -> None:
         "documents",
         sa.Column("content_id", sa.Integer(), nullable=False),
         sa.Column("file_name", sa.String(length=150), nullable=False),
+        sa.Column("file_id", sa.String(length=36), nullable=False),
         sa.Column("chunk_id", sa.Integer(), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column(
@@ -45,14 +46,11 @@ def upgrade() -> None:
         sa.Column("updated_datetime_utc", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("content_id"),
     )
-    op.create_index(
-        "documents_embedding_idx",
-        "documents",
-        ["embedding_vector"],
-        unique=False,
-        postgresql_using="hnsw",
-        postgresql_with={"M": PGVECTOR_M, "ef_construction": PGVECTOR_EF_CONSTRUCTION},
-        postgresql_ops={"embedding": PGVECTOR_DISTANCE},
+
+    op.execute(
+        f"""CREATE INDEX documents_embedding_idx ON documents
+        USING hnsw (embedding_vector {PGVECTOR_DISTANCE})
+        WITH (m = {PGVECTOR_M}, ef_construction = {PGVECTOR_EF_CONSTRUCTION})"""
     )
 
 
@@ -62,7 +60,10 @@ def downgrade() -> None:
         "documents_embedding_idx",
         table_name="documents",
         postgresql_using="hnsw",
-        postgresql_with={"M": "16", "ef_construction": "64"},
+        postgresql_with={
+            "M": {PGVECTOR_M},
+            "ef_construction": PGVECTOR_EF_CONSTRUCTION,
+        },
         postgresql_ops={"embedding": "vector_cosine_ops"},
     )
     op.drop_table("documents")
