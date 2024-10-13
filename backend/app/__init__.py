@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
     """
     Create a FastAPI application with the experiments router.
     """
-    app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan)
+    app = FastAPI(title="HEW-AI Backend API", lifespan=lifespan, debug=True)
 
     app.include_router(ingestion_router)
     app.include_router(search_router)

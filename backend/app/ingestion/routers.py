@@ -24,7 +24,7 @@ TAG_METADATA = {
 router = APIRouter(prefix="/ingestion", tags=[TAG_METADATA["name"]])
 
 
-@router.post("/document_upload", response_model=IngestionResponse)
+@router.post("/", response_model=IngestionResponse)
 async def upload_document(
     file: UploadFile = File(...),
     asession: AsyncSession = Depends(get_async_session),
@@ -42,7 +42,10 @@ async def upload_document(
 
         embeddings = await create_embeddings(chunks)
         logger.info(
-            f"All chunks embedded successfully. Total chunks: {len(embeddings)}"
+            (
+                f"All chunks embedded successfully for file {file_name}."
+                f"Total chunks: {len(embeddings)}"
+            )
         )
 
         file_id = await save_document_to_db(
@@ -54,7 +57,7 @@ async def upload_document(
     except Exception as e:
         logger.error(f"Failed to index uploaded file: {e}")
         raise HTTPException(
-            status_code=400, detail="Failed to index uploaded file."
+            status_code=400, detail=f"Failed to index uploaded file: {e}."
         ) from e
 
     return IngestionResponse(
