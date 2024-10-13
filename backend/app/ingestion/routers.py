@@ -52,6 +52,7 @@ async def upload_document(
         )
 
     except Exception as e:
+        logger.error(f"Failed to index uploaded file: {e}")
         raise HTTPException(
             status_code=400, detail="Failed to index uploaded file."
         ) from e
@@ -115,7 +116,7 @@ async def create_embeddings(chunks: list[str]) -> ndarray:
         A list of embedding vectors corresponding to each text chunk.
     """
 
-    embed_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    embed_model = SentenceTransformer(EMBEDDING_MODEL_NAME, trust_remote_code=True)
 
     logger.info(
         f"""Generating embeddings for {len(chunks)} chunks using
