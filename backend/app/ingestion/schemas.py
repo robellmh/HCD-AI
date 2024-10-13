@@ -9,3 +9,4 @@ class IngestionResponse(BaseModel):
 
     file_name: str
     file_id: str
+    total_chunks: int

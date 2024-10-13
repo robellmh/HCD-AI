@@ -8,6 +8,7 @@ from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..auth.dependencies import authenticate_key
 from ..config import EMBEDDING_MODEL_NAME
 from ..database import get_async_session
 from ..utils import setup_logger
@@ -21,7 +22,11 @@ TAG_METADATA = {
     "description": "Endpoints for ingesting documents.",
 }
 
-router = APIRouter(prefix="/ingestion", tags=[TAG_METADATA["name"]])
+router = APIRouter(
+    dependencies=[Depends(authenticate_key)],
+    prefix="/ingestion",
+    tags=[TAG_METADATA["name"]],
+)
 
 
 @router.post("/", response_model=IngestionResponse)
@@ -61,8 +66,7 @@ async def upload_document(
         ) from e
 
     return IngestionResponse(
-        file_name=file_name,
-        file_id=file_id,
+        file_name=file_name, file_id=file_id, total_chunks=len(embeddings)
     )
 
 
