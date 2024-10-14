@@ -12,7 +12,7 @@ mkdocs serve
 
 !!! warning "You need to have installed [Docker](https://docs.docker.com/get-docker/)"
 
-**Step 1:** Clone the [AAQ repository](https://github.com/IDinsight/ask-a-question).
+**Step 1:** Clone the [HCD-AI](git@github.com:robellmh/HCD-AI.git) repository.
 
 ```shell
 git clone git@github.com:robellmh/HCD-AI.git
@@ -28,7 +28,7 @@ cd deployment/docker-compose/
 
 ```shell
 cp template.base.env .base.env
-cp template.core_backend.env .core_backend.env
+cp template.backend.env .backend.env
 ```
 
 **Step 4:** Edit the `.base.env` and `.backend.env` files to set the environment variables.
