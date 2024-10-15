@@ -1,0 +1,19 @@
+services:
+  backend:
+    depends_on:
+      - relational_db
+      - redis
+    environment:
+      - POSTGRES_HOST=relational_db
+  relational_db:
+    image: pgvector/pgvector:pg16
+    restart: always
+    env_file:
+      - .backend.env
+    volumes:
+      - db_volume:/var/lib/postgresql/data
+    ports: # Expose the port to port 5434 on the host machine for debugging
+      - 5434:5432
+
+volumes:
+  db_volume:
