@@ -14,7 +14,6 @@ services:
       - .backend.env
     environment:
       - REDIS_HOST=redis://redis:6379
-      - LITELLM_ENDPOINT=http://litellm_proxy:4000
     depends_on:
       - redis
 
