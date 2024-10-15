@@ -39,7 +39,7 @@ be updated when deploying in production.
 **Step 5:** Run docker-compose
 
 ```shell
-docker compose -f docker-compose.yml -p hew-ai-stack up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -p hew-ai-stack up -d --build
 ```
 
 You can now view the the API documentation at
@@ -48,5 +48,5 @@ You can now view the the API documentation at
 **Step 5:** Shutdown containers
 
 ```shell
-docker compose -f docker-compose.yml -p hew-ai-stack down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -p hew-ai-stack down
 ```
