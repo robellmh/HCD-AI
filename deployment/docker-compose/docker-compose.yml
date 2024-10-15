@@ -19,7 +19,7 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ../../core_backend
+          path: ../../backend
 
   redis:
     image: "redis:6.0-alpine"
