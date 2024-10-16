@@ -1,15 +1,29 @@
+from typing import Any, Dict
+
 from pydantic import BaseModel
 
 
 class DocumentRequest(BaseModel):
-    """Request schema for document operations"""
+    """
+    Schema for the document request.
 
-    document_id: str
+    Attributes:
+        title (str): The title of the document.
+        content (str): The content of the document.
+    """
+
+    title: str
     content: str
 
 
 class DocumentResponse(BaseModel):
-    """Response schema for document operations"""
+    """
+    Schema for the document response.
 
-    status: str
+    Attributes:
+        message (str): A message indicating the result of the operation.
+        data (Dict[str, Any]): The data related to the document.
+    """
+
     message: str
+    data: Dict[str, Any]
