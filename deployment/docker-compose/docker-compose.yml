@@ -1,0 +1,27 @@
+services:
+  backend:
+    image: idinsight/hew-ai-backend:latest
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    command: >
+      /bin/sh startup.sh
+    restart: always
+    volumes:
+      - temp:/usr/src/backend/temp
+    env_file:
+      - .base.env
+      - .backend.env
+    environment:
+      - REDIS_HOST=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:6.0-alpine"
+    ports: # Expose the port to port 6380 on the host machine for debugging
+      - "6380:6379"
+    restart: always
+
+volumes:
+  temp:
