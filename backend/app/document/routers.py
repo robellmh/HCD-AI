@@ -17,13 +17,19 @@ def upload_document(request: DocumentRequest) -> DocumentResponse:
     Returns:
         DocumentResponse: A response containing the upload status and data.
     """
+    # Validate that the request contains both title and content
     if not request.title or not request.content:
         raise HTTPException(
             status_code=400, detail="Document title and content are required."
         )
 
+    # Simulate the document upload logic here (e.g., saving to database)
     return DocumentResponse(
-        message="Document uploaded successfully", data={"title": request.title}
+        message="Document uploaded successfully",
+        data={
+            "title": request.title,
+            "content": request.content,
+        },  # Include content if needed
     )
 
 
@@ -39,6 +45,7 @@ def get_document(document_id: str) -> DocumentResponse:
     Returns:
         DocumentResponse: A response containing the document data.
     """
+    # Simulate fetching document data; replace with actual data retrieval logic
     document_data = {"title": f"Document {document_id}", "content": "Document content"}
 
     if not document_data:
