@@ -5,7 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis import asyncio as aioredis
 
+from .chat import router as chat_router
 from .config import REDIS_HOST
+from .feedback import router as feedback_router
+from .history import router as history_router
 from .ingestion import router as ingestion_router
 from .search import router as search_router
 from .utils import setup_logger
@@ -36,6 +39,9 @@ def create_app() -> FastAPI:
 
     app.include_router(ingestion_router)
     app.include_router(search_router)
+    app.include_router(chat_router)
+    app.include_router(history_router)
+    app.include_router(feedback_router)
 
     origins = [
         "http://localhost",

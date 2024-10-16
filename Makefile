@@ -8,8 +8,8 @@ CONDA_ACTIVATE=conda activate $(PROJECT_NAME)
 ENDPOINT_URL=localhost:8000
 
 # Guard function for environment variables (Linux)
-guard-%:
-	@if [ -z '${${*}}' ]; then echo 'ERROR: environment variable $* not set' && exit 1; fi
+# guard-%:
+# 	@if [ -z '${${*}}' ]; then echo 'ERROR: environment variable $* not set' && exit 1; fi
 
 # Guard function for environment variables (Windows)
 guard-windows-%:
@@ -64,12 +64,7 @@ setup-db-windows: guard-windows-POSTGRES_USER guard-windows-POSTGRES_PASSWORD gu
 	@timeout /t 2
 	@docker run --name pg-hew-ai-local -e POSTGRES_USER=$(POSTGRES_USER) -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) -e POSTGRES_DB=$(POSTGRES_DB) -p 5432:5432 -d pgvector/pgvector:pg16
 	@timeout /t 5
-	@setlocal enabledelayedexpansion && \
-	call "$(CURDIR)\deployment\docker-compose\.base.env" && \
-	call "$(CURDIR)\deployment\docker-compose\.backend.env" && \
-	endlocal && \
-	cd backend && \
-	python -m alembic upgrade head
+	migrate
 
 # Teardown PostgreSQL (Linux)
 teardown-db:
@@ -106,3 +101,10 @@ teardown-redis:
 teardown-redis-windows:
 	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
 	@docker rm redis-hew-ai-local || echo "Container not found, skipping remove."
+
+migrate:
+	@echo "Running migration..."
+    powershell -Command "$baseEnv = Get-Content '$(CURDIR)/deployment/docker-compose/.base.env'; \
+                         $backendEnv = Get-Content '$(CURDIR)/deployment/docker-compose/.backend.env'; \
+                         foreach ($line in $baseEnv) { if ($line -match '^(.*?)=(.*)$') { [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2]) } }; \
+                         foreach ($line in $backendEnv) { if ($line -match '^(.*?)=(.*)$') { [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2]) } }"
