@@ -23,6 +23,7 @@ jobs:
           cache-dependency-path: |
             backend/requirements.txt
             requirements-dev.txt
+
       - run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
@@ -31,10 +32,22 @@ jobs:
       - name: Run MyPy
         run: |
           mypy backend/app
+        env:
+          POSTGRES_USER: postgres-test-user
+          POSTGRES_PASSWORD: postgres-test-pw
+          POSTGRES_DB: postgres-test-db
+          REDIS_HOST: redis://redis:6379
+          POSTGRES_HOST: postgres
 
       - name: Run ruff
         run: |
           ruff check .
+        env:
+          POSTGRES_USER: postgres-test-user
+          POSTGRES_PASSWORD: postgres-test-pw
+          POSTGRES_DB: postgres-test-db
+          REDIS_HOST: redis://redis:6379
+          POSTGRES_HOST: postgres
 
       - name: Check code formatting with Black
         run: |
