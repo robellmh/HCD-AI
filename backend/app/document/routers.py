@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from backend.app.document.schemas import DocumentRequest, DocumentResponse
+from .schemas import DocumentRequest, DocumentResponse
 
 router = APIRouter()
 
