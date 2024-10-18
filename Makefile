@@ -8,8 +8,8 @@ CONDA_ACTIVATE=conda activate $(PROJECT_NAME)
 ENDPOINT_URL=localhost:8000
 
 # Guard function for environment variables (Linux)
-# guard-%:
-# 	@if [ -z '${${*}}' ]; then echo 'ERROR: environment variable $* not set' && exit 1; fi
+guard-%:
+	@if [ -z '${${*}}' ]; then echo 'ERROR: environment variable $* not set' && exit 1; fi
 
 # Guard function for environment variables (Windows)
 guard-windows-%:
