@@ -58,6 +58,6 @@ jobs:
         run: |
           cd backend
           export POSTGRES_HOST=postgres POSTGRES_USER=$POSTGRES_USER \
-            POSTGRES_PASSWORD=$POSTGRES_PASSWORD POSTGRES_DB=$POSTGRES_DB \
+            POSTGRES_PASSWORD=$POSTGRES_PASSWORD POSTGRES_DB=$POSTGRES_DB
           python -m alembic upgrade head
           python -m pytest tests
