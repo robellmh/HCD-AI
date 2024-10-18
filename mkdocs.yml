@@ -1,0 +1,9 @@
+site_name: HEW AI-assistant
+site_description: "Ethiopian HEW AI-assistant Documentation"
+site_url: https://localhost:8001
+theme:
+  name: material
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
