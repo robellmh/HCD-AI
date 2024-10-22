@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 
 from backend.app.auth.config import API_SECRET_KEY
 from backend.app.feedback.routers import (
@@ -12,51 +13,66 @@ from backend.app.feedback.routers import (
 client = TestClient(router)
 
 
+# Pydantic model for feedback submission
+class FeedbackRequest(BaseModel):
+    user_name: str
+    chat_id: str
+    feedback_text: str
+
+
 @pytest.mark.parametrize(
     "feedback_data, expected_status",
     [
         (
-            {
-                "user_name": "John Doe",
-                "chat_id": uuid4(),
-                "feedback_text": "Great chat!",
-            },
+            FeedbackRequest(
+                user_name="John Doe",
+                chat_id=str(uuid4()),
+                feedback_text="Great chat!",
+            ),
             200,
         ),
         (
-            {"user_name": "", "chat_id": uuid4(), "feedback_text": "No username!"},
+            FeedbackRequest(
+                user_name="", chat_id=str(uuid4()), feedback_text="No username!"
+            ),
             200,
         ),  # Username is empty but feedback can still be submitted
         (
-            {"user_name": "Jane Doe", "chat_id": uuid4(), "feedback_text": ""},
+            FeedbackRequest(
+                user_name="Jane Doe", chat_id=str(uuid4()), feedback_text=""
+            ),
             200,
         ),  # Feedback text is empty but feedback can still be submitted
     ],
 )
-def test_feedback_submission(feedback_data: dict, status_code: int) -> None:
+def test_feedback_submission(
+    feedback_data: FeedbackRequest, expected_status: int
+) -> None:
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
-    response = client.post("/feedback", json=feedback_data, headers=headers)
-    assert response.status_code == status_code
+    response = client.post("/feedback", json=feedback_data.dict(), headers=headers)
+    assert response.status_code == expected_status
 
 
 def test_get_feedback_by_chat_id() -> None:
-    chat_id = uuid4()  # Create a new UUID for testing
+    chat_id = str(uuid4())  # Create a new UUID for testing
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
 
-    # First, submit feedback for the chat_id
+    # First, submit feedback for the chat_id using the Pydantic model
+    feedback_data = FeedbackRequest(
+        user_name="Test User",
+        chat_id=chat_id,
+        feedback_text="This is a feedback comment.",
+    )
+
     submit_response = client.post(
         "/feedback",
-        json={
-            "user_name": "Test User",
-            "chat_id": chat_id,
-            "feedback_text": "This is a feedback comment.",
-        },
+        json=feedback_data.dict(),
         headers=headers,
     )
 
@@ -85,6 +101,12 @@ def test_get_feedback_for_nonexistent_chat_id() -> None:
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
+
+    # Make the GET request for the nonexistent chat ID
     response = client.get(f"/feedback/{nonexistent_chat_id}", headers=headers)
-    assert response.status_code == 200  # Ensure that the response is successful
-    assert response.json()["feedbacks"] == []  # Expect an empty list for no feedback
+
+    # Expecting a 400 status code for nonexistent feedback
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "Feedback not found"
+    }  # Check the detail message

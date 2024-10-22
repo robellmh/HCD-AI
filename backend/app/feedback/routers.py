@@ -1,10 +1,10 @@
 from typing import List
 from uuid import UUID  # Import UUID here
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth.dependencies import authenticate_key
-from .schemas import Feedback, FeedbackResponse, ListFeedbackResponse
+from .schemas import Feedback, FeedbackResponse
 
 router = APIRouter(
     dependencies=[Depends(authenticate_key)], tags=["Feedback endpoints"]
@@ -30,12 +30,18 @@ async def submit_feedback(
     return FeedbackResponse(feedback=feedback)
 
 
-@router.get("/feedback/{chat_id}", response_model=ListFeedbackResponse)
-async def get_feedback_by_chat_id(chat_id: UUID) -> ListFeedbackResponse:
+@router.get("/feedback/{chat_id}", response_model=FeedbackResponse)
+async def get_feedback_by_chat_id(chat_id: UUID) -> FeedbackResponse:
     """
-    This endpoint retrieves feedback entries by chat_id
+    This endpoint retrieves a single feedback entry by chat_id.
+    Returns 400 when the feedback is not found.
     """
-    chat_feedback = [
-        feedback for feedback in feedback_storage if feedback.chat_id == chat_id
-    ]
-    return ListFeedbackResponse(feedbacks=chat_feedback)
+    # Find feedback by chat_id
+    chat_feedback = next(
+        (feedback for feedback in feedback_storage if feedback.chat_id == chat_id), None
+    )
+
+    if chat_feedback is None:
+        raise HTTPException(status_code=400, detail="Feedback not found")
+
+    return FeedbackResponse(feedback=chat_feedback)
