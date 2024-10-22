@@ -1,10 +1,9 @@
 from uuid import uuid4
 
 import pytest
+from app.auth.config import API_SECRET_KEY
+from app.history.routers import router
 from fastapi.testclient import TestClient
-
-from backend.app.auth.config import API_SECRET_KEY
-from backend.app.history.routers import router
 
 client = TestClient(router)
 
