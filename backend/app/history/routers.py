@@ -8,7 +8,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..auth.dependencies import authenticate_key
-from .schemas import History, HistoryResponse, ListHistoryResponse, Response
+from .schemas import (
+    History,
+    HistoryResponse,
+    ListHistoryResponse,
+)
 
 router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["History endpoints"])
 
@@ -17,19 +21,12 @@ history_storage: List[History] = []
 
 
 @router.post("/history", response_model=HistoryResponse)
-async def create_history(
-    chat_id: UUID, created_by: str, responses: List[Response]
-) -> HistoryResponse:
+async def create_history(chat_history: History) -> HistoryResponse:
     """
     This endpoint creates a history entry for a chat
     """
-    history = History(
-        chat_id=chat_id,
-        created_by=created_by,
-        responses=responses,
-    )
-    history_storage.append(history)  # Save history in the in-memory storage
-    return HistoryResponse(history=history)
+    history_storage.append(chat_history)  # Save history in the in-memory storage
+    return HistoryResponse(history=chat_history)
 
 
 @router.get("/history/{chat_id}", response_model=HistoryResponse)
@@ -53,4 +50,10 @@ async def get_history_by_created_by(created_by: str) -> ListHistoryResponse:
     user_histories = [
         history for history in history_storage if history.created_by == created_by
     ]
+
+    if len(user_histories) == 0:
+        raise HTTPException(
+            status_code=404, detail="History not found for the given user"
+        )
+
     return ListHistoryResponse(histories=user_histories)

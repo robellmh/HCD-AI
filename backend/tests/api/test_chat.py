@@ -18,7 +18,9 @@ def test_start_chat(client: TestClient) -> None:
     )
 
     # Dump the Pydantic model as JSON
-    response = client.post("/chat", headers=headers, json=new_chat_data.dict())
+    response = client.post(
+        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+    )
 
     assert response.status_code == 200
     assert "Chat started successfully with ID:" in response.json()["response"]
@@ -35,7 +37,9 @@ def test_get_chat(client: TestClient) -> None:
     new_chat_data = NewChatRequest(
         user_name="Test User", created_date_time="2024-10-16T12:00:00Z"
     )
-    start_response = client.post("/chat", headers=headers, json=new_chat_data.dict())
+    start_response = client.post(
+        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+    )
     chat_id = start_response.json()["response"].split(": ")[-1]  # Extract the chat ID
 
     response = client.get(f"/chat/{chat_id}", headers=headers)
@@ -55,7 +59,9 @@ def test_ask_question(client: TestClient) -> None:
     new_chat_data = NewChatRequest(
         user_name="Test User", created_date_time="2024-10-16T12:00:00Z"
     )
-    start_response = client.post("/chat", headers=headers, json=new_chat_data.dict())
+    start_response = client.post(
+        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+    )
     chat_id = start_response.json()["response"].split(": ")[-1]  # Extract the chat ID
 
     # Sample data for the ask question request using Pydantic model
@@ -63,7 +69,9 @@ def test_ask_question(client: TestClient) -> None:
 
     # Dump the Pydantic model as JSON
     response = client.post(
-        f"/chat/{chat_id}/ask", headers=headers, json=ask_question_data.dict()
+        f"/chat/{chat_id}/ask",
+        headers=headers,
+        json=ask_question_data.model_dump_json(),
     )
 
     assert response.status_code == 200
@@ -77,7 +85,7 @@ def test_get_non_existent_chat(client: TestClient) -> None:
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
 
-    non_existent_chat_id = uuid4()  # Generate a random UUID that won't exist
+    non_existent_chat_id = str(uuid4())  # Generate a random UUID that won't exist
     response = client.get(f"/chat/{non_existent_chat_id}", headers=headers)
 
     assert response.status_code == 404

@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from app.auth.config import API_SECRET_KEY
 from app.history.routers import router
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 client = TestClient(router)
@@ -13,15 +14,20 @@ client = TestClient(router)
     [
         (
             {
-                "chat_id": uuid4(),
+                "chat_id": str(uuid4()),
                 "created_by": "Alice",
-                "responses": [{"answer": "This is the first response."}],
+                "responses": [
+                    {
+                        "question": "test question",
+                        "answer": "This is the first response.",
+                    }
+                ],
             },
             200,
         ),
         (
             {
-                "chat_id": uuid4(),
+                "chat_id": str(uuid4()),
                 "created_by": "Bob",
                 "responses": [],
             },
@@ -56,10 +62,15 @@ def test_user_history(history_data: dict, expected_status: int) -> None:
 
 
 def test_get_history_by_chat_id() -> None:
-    chat_id = uuid4()
+    chat_id = str(uuid4())
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
+    }
+
+    sample_chat = {
+        "question": "Test questions",
+        "answer": "This is another test response.",
     }
 
     create_response = client.post(
@@ -67,7 +78,7 @@ def test_get_history_by_chat_id() -> None:
         json={
             "chat_id": chat_id,
             "created_by": "Test User",
-            "responses": [{"answer": "This is a test response."}],
+            "responses": [sample_chat],
         },
         headers=headers,
     )
@@ -80,19 +91,18 @@ def test_get_history_by_chat_id() -> None:
     history_response = response.json()
     assert history_response["history"]["chat_id"] == str(chat_id)
     assert history_response["history"]["created_by"] == "Test User"
-    assert history_response["history"]["responses"] == [
-        {"answer": "This is a test response."}
-    ]
+    assert history_response["history"]["responses"] == [sample_chat]
 
 
 def test_get_history_for_nonexistent_chat_id() -> None:
-    nonexistent_chat_id = uuid4()
+    nonexistent_chat_id = str(uuid4())
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
-    response = client.get(f"/history/{nonexistent_chat_id}", headers=headers)
-    assert response.status_code == 404
+    with pytest.raises(HTTPException) as err:
+        client.get(f"/history/{nonexistent_chat_id}", headers=headers)
+    assert err.value.status_code == 404
 
 
 def test_get_history_for_nonexistent_user() -> None:
@@ -101,16 +111,22 @@ def test_get_history_for_nonexistent_user() -> None:
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
-    response = client.get(f"/history/user/{nonexistent_user}", headers=headers)
-    assert response.status_code == 404
+    with pytest.raises(HTTPException) as err:
+        client.get(f"/history/user/{nonexistent_user}", headers=headers)
+    assert err.value.status_code == 404
 
 
 def test_get_history_by_created_by() -> None:
-    chat_id = uuid4()
-    created_by = "Alice"
+    chat_id = str(uuid4())
+    created_by = "Charlie"
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
+    }
+
+    sample_chat = {
+        "question": "Test questions",
+        "answer": "This is another test response.",
     }
 
     create_response = client.post(
@@ -118,7 +134,7 @@ def test_get_history_by_created_by() -> None:
         json={
             "chat_id": chat_id,
             "created_by": created_by,
-            "responses": [{"answer": "This is another test response."}],
+            "responses": [sample_chat],
         },
         headers=headers,
     )
@@ -129,6 +145,4 @@ def test_get_history_by_created_by() -> None:
     assert response.status_code == 200
     assert len(response.json()["histories"]) == 1
     assert response.json()["histories"][0]["created_by"] == created_by
-    assert response.json()["histories"][0]["responses"] == [
-        {"answer": "This is another test response."}
-    ]
+    assert response.json()["histories"][0]["responses"] == [sample_chat]
