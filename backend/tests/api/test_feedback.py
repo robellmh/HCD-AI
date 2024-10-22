@@ -1,23 +1,15 @@
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
-from pydantic import BaseModel
-
-from backend.app.auth.config import API_SECRET_KEY
-from backend.app.feedback.routers import (
+from app.auth.config import API_SECRET_KEY
+from app.feedback.routers import (
     router,
 )  # Adjust the import based on your project structure
+from app.feedback.schemas import FeedbackRequest
+from fastapi.testclient import TestClient
 
 # Create a test client using the FastAPI app and mount the router
 client = TestClient(router)
-
-
-# Pydantic model for feedback submission
-class FeedbackRequest(BaseModel):
-    user_name: str
-    chat_id: str
-    feedback_text: str
 
 
 @pytest.mark.parametrize(
@@ -27,19 +19,23 @@ class FeedbackRequest(BaseModel):
             FeedbackRequest(
                 user_name="John Doe",
                 chat_id=str(uuid4()),
+                like=True,
                 feedback_text="Great chat!",
             ),
             200,
         ),
         (
             FeedbackRequest(
-                user_name="", chat_id=str(uuid4()), feedback_text="No username!"
+                user_name="",
+                chat_id=str(uuid4()),
+                like=False,
+                feedback_text="No username!",
             ),
             200,
         ),  # Username is empty but feedback can still be submitted
         (
             FeedbackRequest(
-                user_name="Jane Doe", chat_id=str(uuid4()), feedback_text=""
+                user_name="Jane Doe", like=True, chat_id=str(uuid4()), feedback_text=""
             ),
             200,
         ),  # Feedback text is empty but feedback can still be submitted
