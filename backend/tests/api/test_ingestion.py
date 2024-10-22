@@ -1,9 +1,8 @@
 from pathlib import Path
 
 import pytest
+from app.auth.config import API_SECRET_KEY
 from fastapi.testclient import TestClient
-
-from backend.app.auth.config import API_SECRET_KEY
 
 
 @pytest.mark.parametrize(

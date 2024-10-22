@@ -2,13 +2,12 @@ from typing import AsyncGenerator, Generator
 
 import numpy as np
 import pytest
+from app import create_app
+from app.config import PGVECTOR_VECTOR_SIZE
+from app.database import get_connection_url
 from fastapi.testclient import TestClient
 from numpy import ndarray
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-
-from backend.app import create_app
-from backend.app.config import PGVECTOR_VECTOR_SIZE
-from backend.app.database import get_connection_url
 
 
 # We recreate engine and session to ensure it is in the same
