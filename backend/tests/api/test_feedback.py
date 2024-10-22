@@ -48,7 +48,9 @@ def test_feedback_submission(
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
-    response = client.post("/feedback", json=feedback_data.dict(), headers=headers)
+    response = client.post(
+        "/feedback", json=feedback_data.model_dump_json(), headers=headers
+    )
     assert response.status_code == expected_status
 
 
@@ -68,7 +70,7 @@ def test_get_feedback_by_chat_id() -> None:
 
     submit_response = client.post(
         "/feedback",
-        json=feedback_data.dict(),
+        json=feedback_data.model_dump_json(),
         headers=headers,
     )
 
@@ -92,7 +94,7 @@ def test_get_feedback_by_chat_id() -> None:
 
 
 def test_get_feedback_for_nonexistent_chat_id() -> None:
-    nonexistent_chat_id = uuid4()  # Create a UUID that has not been used
+    nonexistent_chat_id = str(uuid4())  # Create a UUID that has not been used
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
