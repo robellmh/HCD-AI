@@ -96,6 +96,16 @@ def test_get_history_for_nonexistent_chat_id() -> None:
     assert response.status_code == 404
 
 
+def test_get_history_for_nonexistent_user() -> None:
+    nonexistent_user = "Nonexistent User"
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {API_SECRET_KEY}",
+    }
+    response = client.get(f"/history/user/{nonexistent_user}", headers=headers)
+    assert response.status_code == 404
+
+
 def test_get_history_by_created_by() -> None:
     chat_id = uuid4()
     created_by = "Alice"
