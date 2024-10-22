@@ -1,29 +1,8 @@
 from uuid import uuid4
 
-import pytest
+from app.auth.config import API_SECRET_KEY
+from app.chat.schemas import AskQuestionRequest, NewChatRequest
 from fastapi.testclient import TestClient
-from pydantic import BaseModel
-
-from backend.app.auth.config import API_SECRET_KEY
-
-
-@pytest.fixture
-def client() -> TestClient:
-    from backend.app.main import (
-        app,
-    )  # Adjust this import according to your project structure
-
-    return TestClient(app)
-
-
-# Pydantic models for request data
-class NewChatRequest(BaseModel):
-    user_name: str
-    created_date_time: str  # ISO format datetime string
-
-
-class AskQuestionRequest(BaseModel):
-    question: str
 
 
 # Test for starting a new chat
