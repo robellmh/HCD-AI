@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from app.auth.config import API_SECRET_KEY
-from app.chat.schemas import AskQuestionRequest, NewChatRequest
 from fastapi.testclient import TestClient
 
 
@@ -12,14 +11,11 @@ def test_start_chat(client: TestClient) -> None:
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
 
-    # Sample data for the new chat request using Pydantic model
-    new_chat_data = NewChatRequest(
-        user_name="Test User", created_date_time="2024-10-16T12:00:00Z"
-    )
-
     # Dump the Pydantic model as JSON
     response = client.post(
-        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+        "/chat",
+        headers=headers,
+        json={"user_name": "Test User", "created_date_time": "2024-10-16T12:00:00Z"},
     )
 
     assert response.status_code == 200
@@ -33,12 +29,10 @@ def test_get_chat(client: TestClient) -> None:
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
 
-    # Start a chat first to get a valid chat_id
-    new_chat_data = NewChatRequest(
-        user_name="Test User", created_date_time="2024-10-16T12:00:00Z"
-    )
     start_response = client.post(
-        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+        "/chat",
+        headers=headers,
+        json={"user_name": "Test User", "created_date_time": "2024-10-16T12:00:00Z"},
     )
     chat_id = start_response.json()["response"].split(": ")[-1]  # Extract the chat ID
 
@@ -55,23 +49,18 @@ def test_ask_question(client: TestClient) -> None:
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
 
-    # Start a chat first to get a valid chat_id
-    new_chat_data = NewChatRequest(
-        user_name="Test User", created_date_time="2024-10-16T12:00:00Z"
-    )
     start_response = client.post(
-        "/chat", headers=headers, json=new_chat_data.model_dump_json()
+        "/chat",
+        headers=headers,
+        json={"user_name": "Test User2", "created_date_time": "2024-10-16T12:00:00Z"},
     )
     chat_id = start_response.json()["response"].split(": ")[-1]  # Extract the chat ID
-
-    # Sample data for the ask question request using Pydantic model
-    ask_question_data = AskQuestionRequest(question="What is the capital of Ethiopia?")
 
     # Dump the Pydantic model as JSON
     response = client.post(
         f"/chat/{chat_id}/ask",
         headers=headers,
-        json=ask_question_data.model_dump_json(),
+        json={"question": "What is the capital of Ethiopia?"},
     )
 
     assert response.status_code == 200
