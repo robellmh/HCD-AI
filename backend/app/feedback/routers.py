@@ -15,17 +15,11 @@ feedback_storage: List[Feedback] = []
 
 
 @router.post("/feedback", response_model=FeedbackResponse)
-async def submit_feedback(
-    user_name: str, chat_id: UUID, feedback_text: str
-) -> FeedbackResponse:
+async def submit_feedback(feedback: Feedback) -> FeedbackResponse:
     """
     This endpoint allows users to submit feedback
     """
-    feedback = Feedback(
-        user_name=user_name,
-        chat_id=chat_id,
-        feedback_text=feedback_text,
-    )
+
     feedback_storage.append(feedback)  # Save feedback in the in-memory storage
     return FeedbackResponse(feedback=feedback)
 
@@ -42,6 +36,23 @@ async def get_feedback_by_chat_id(chat_id: UUID) -> FeedbackResponse:
     )
 
     if chat_feedback is None:
-        raise HTTPException(status_code=400, detail="Feedback not found")
+        raise HTTPException(status_code=404, detail="Feedback not found")
 
     return FeedbackResponse(feedback=chat_feedback)
+
+
+@router.get("/feedback/user/{user_id}", response_model=List[FeedbackResponse])
+async def get_feedback_by_user_id(user_id: str) -> List[FeedbackResponse]:
+    """
+    This endpoint retrieves a list of feedback entries by user_id.
+    Returns an empty list if no feedback is found.
+    """
+    # Find all feedback by user_id
+    user_feedback = [
+        feedback for feedback in feedback_storage if feedback.user_name == user_id
+    ]
+
+    if not user_feedback:
+        raise HTTPException(status_code=404, detail="No feedback found for this user")
+
+    return [FeedbackResponse(feedback=feedback) for feedback in user_feedback]
