@@ -14,9 +14,20 @@ class Feedback(BaseModel):
     user_name: str
     chat_id: UUID
     feedback_text: str
+    like: bool
     created_datetime: datetime = Field(default_factory=datetime.now)
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FeedbackRequest(BaseModel):
+    """
+    Pydantic model for feedback submission
+    """
+
+    user_name: str
+    chat_id: str
+    feedback_text: str
 
 
 class FeedbackResponse(BaseModel):

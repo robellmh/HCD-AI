@@ -7,7 +7,6 @@ from redis import asyncio as aioredis
 
 from .chat import router as chat_router
 from .config import REDIS_HOST
-from .document import router as document_router
 from .feedback import router as feedback_router
 from .history import router as history_router
 from .ingestion import router as ingestion_router
@@ -43,7 +42,6 @@ def create_app() -> FastAPI:
     app.include_router(chat_router)
     app.include_router(history_router)
     app.include_router(feedback_router)
-    app.include_router(document_router)
 
     origins = [
         "http://localhost",
