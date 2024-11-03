@@ -47,7 +47,7 @@ class RAG(BaseModel):
         {context}
 
         IMPORTANT NOTES ON THE "answer" FIELD:
-        - Answer in the language of the question ({original_language}).
+        - Answer in the language of the question.
         - Answer should be concise, to the point, and no longer than 80 words.
         - Do not include any information that is not present in the REFERENCE TEXT.
         """
