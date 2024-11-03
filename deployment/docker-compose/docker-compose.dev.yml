@@ -5,6 +5,8 @@ services:
       - redis
     environment:
       - POSTGRES_HOST=relational_db
+    ports:
+      - 8000:8000
   relational_db:
     image: pgvector/pgvector:pg16
     restart: always

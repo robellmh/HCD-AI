@@ -105,3 +105,12 @@ def setup_logger(
     logger.addHandler(handler)
 
     return logger
+
+
+def remove_json_markdown(text: str) -> str:
+    """Remove json markdown from text."""
+
+    json_str = text.removeprefix("```json").removesuffix("```").strip()
+    json_str = json_str.replace(r"\{", "{").replace(r"\}", "}")
+
+    return json_str

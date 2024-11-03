@@ -4,13 +4,11 @@ from io import BytesIO
 
 import PyPDF2
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from numpy import ndarray
-from sentence_transformers import SentenceTransformer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
-from ..config import EMBEDDING_MODEL_NAME
 from ..database import get_async_session
+from ..llm_utils.embeddings import create_embeddings
 from ..utils import setup_logger
 from .models import save_document_to_db
 from .schemas import IngestionResponse
@@ -108,30 +106,3 @@ async def parse_file(file: bytes) -> list[str]:
         chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
     return chunks
-
-
-async def create_embeddings(chunks: list[str]) -> ndarray:
-    """
-    Create embeddings for a list of text chunks using `sentence_transformers`
-
-    Parameters
-    ----------
-    chunks
-        A list of text chunks.
-
-    Returns
-    -------
-    ndarray
-        A list of embedding vectors corresponding to each text chunk.
-    """
-
-    embed_model = SentenceTransformer(EMBEDDING_MODEL_NAME, trust_remote_code=True)
-
-    logger.info(
-        f"""Generating embeddings for {len(chunks)} chunks using
-                async batch processing"""
-    )
-    embeddings = embed_model.encode(chunks)
-    logger.info("Embeddings generated successfully")
-
-    return embeddings

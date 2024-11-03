@@ -22,3 +22,5 @@ PGVECTOR_DISTANCE = os.environ.get("PGVECTOR_DISTANCE", "vector_cosine_ops")
 EMBEDDING_MODEL_NAME = os.environ.get(
     "EMBEDDING_MODEL_NAME", "Alibaba-NLP/gte-base-en-v1.5"
 )  # Update `PGVECTOR_VECTOR_SIZE` accordingly
+
+LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-4o-mini")
