@@ -1,11 +1,12 @@
 from typing import List, Optional
 from uuid import UUID
 
-from app.feedback.models import FeedbackModel  # Your ORM model for feedback
-from app.feedback.schemas import Feedback, FeedbackRequest  # Adjusted imports
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from ..feedback.models import FeedbackModel
+from ..feedback.schemas import Feedback, FeedbackRequest
 
 
 class FeedbackService:

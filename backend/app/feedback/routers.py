@@ -1,12 +1,12 @@
 # feedback/routers.py
 from uuid import UUID
 
-from app.services.FeedbackService import FeedbackService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
 from ..database import get_async_session
+from ..services.FeedbackService import FeedbackService
 from .schemas import FeedbackRequest, FeedbackResponse, ListFeedbackResponse
 
 router = APIRouter(
