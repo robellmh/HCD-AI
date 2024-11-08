@@ -2,8 +2,6 @@
 This module contains FastAPI routes for chat
 """
 
-from uuid import UUID
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,10 +10,12 @@ from ..database import get_async_session
 from ..ingestion.models import get_similar_n_chunks
 from ..llm_utils.completion import get_llm_response
 from ..llm_utils.embeddings import create_embeddings
+from .models import get_chat_history, save_chat_request, save_chat_response
 from .schemas import (
     ChatHistory,
     ChatResponse,
-    ChatUserMessage,
+    ChatResponseBase,
+    ChatUserMessageBase,
 )
 
 router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["Chat endpoints"])
@@ -23,15 +23,16 @@ router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["Chat endpoin
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
-    chat_request: ChatUserMessage, asession: AsyncSession = Depends(get_async_session)
+    chat_request: ChatUserMessageBase,
+    asession: AsyncSession = Depends(get_async_session),
 ) -> ChatResponse:
     """
-    This is the endpoint called for chat
+    This is the endpoint called for chat. Note that it is currently just a single turn
+    and does not retrieve chat history.
     """
-    # Get embeddings for message
-    # Get Top N similar messages
-    # Send Top N similar messages to LLM to get response
-    # Return response
+
+    saved_chat_request = await save_chat_request(chat_request, asession)
+
     message_embeddings = await create_embeddings(chat_request.message)
     similar_chunks = await get_similar_n_chunks(
         message_embeddings, n_similar=5, asession=asession
@@ -40,17 +41,29 @@ async def chat(
         user_message=chat_request.message, similar_chunks=similar_chunks
     )
 
-    return ChatResponse(
+    chat_response_base = ChatResponseBase(
         response=llm_response.answer,
-        chat_id=chat_request.chat_id,
-        response_metadata=similar_chunks,
+        request_id=saved_chat_request.request_id,
+        response_metadata={
+            i: chunk.model_dump() for i, chunk in similar_chunks.items()
+        },
     )
+
+    saved_chat_response = await save_chat_response(chat_response_base, asession)
+
+    chat_response = ChatResponse.from_orm(saved_chat_response)
+
+    return chat_response
 
 
 @router.get("/chat/{session_id}", response_model=ChatHistory)
-async def get_chat(session_id: UUID) -> ChatHistory:
+async def get_chat(
+    session_id: str,
+    asession: AsyncSession = Depends(get_async_session),
+) -> ChatHistory:
     """
     This endpoint retrieves a chat by chat_id
     """
 
-    return []
+    chats = await get_chat_history(str(session_id), asession)
+    return chats

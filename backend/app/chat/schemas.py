@@ -1,15 +1,14 @@
+from datetime import datetime
 from typing import Optional
-from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ChatUserMessage(BaseModel):
+class ChatUserMessageBase(BaseModel):
     """
     Schema for a user's chat message
     """
 
-    chat_id: UUID = Field(default_factory=uuid4)
     session_id: Optional[str] = None
     user_id: int
     message: str
@@ -17,7 +16,16 @@ class ChatUserMessage(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ChatResponse(BaseModel):
+class ChatUserMessage(ChatUserMessageBase):
+    """
+    Schema for a user's chat message
+    """
+
+    request_id: int
+    created_datetime_utc: datetime
+
+
+class ChatResponseBase(BaseModel):
     """
     Schema for the response to a user's chat message
     """
@@ -26,25 +34,21 @@ class ChatResponse(BaseModel):
         ...,
         examples=["This is a sample chat response"],
     )
-    chat_id: UUID
-
+    request_id: int
     response_metadata: Optional[dict] = Field(
         default_factory=dict, examples=[{"timestamp": "2024-10-16T12:31:00Z"}]
     )
 
+    model_config = ConfigDict(from_attributes=True)
 
-class AskResponse(BaseModel):
+
+class ChatResponse(ChatResponseBase):
     """
-    Schema for the response to a user's question
+    Schema for the response to a user's chat message
     """
 
-    answer: str = Field(
-        ...,
-        examples=[
-            "The symptoms of diabetes include increased thirst, "
-            "frequent urination, and fatigue."
-        ],
-    )
+    response_id: int
+    created_datetime_utc: datetime
 
 
 ChatHistory = list[ChatResponse | ChatUserMessage]
