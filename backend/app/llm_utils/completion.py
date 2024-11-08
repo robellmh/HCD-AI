@@ -1,7 +1,7 @@
 from litellm import acompletion
 from pydantic import ValidationError
 
-from ..config import LLM_MODEL
+from ..config import LLM_API_BASE, LLM_MODEL
 from ..ingestion.models import DocumentChunk
 from ..llm_utils.prompts import RAG
 from ..utils import remove_json_markdown, setup_logger
@@ -23,7 +23,7 @@ async def get_llm_response(
     try:
         response = RAG.model_validate_json(llm_answer_trimmed)
     except ValidationError as e:
-        logger.error(f"Failed to parse LLM response: {e}")
+        logger.error(f"Failed to parse LLM response: {e}. LLM response: {llm_answer}")
         response = RAG(extracted_info=[], answer=llm_answer_trimmed)
 
     return response
@@ -51,11 +51,17 @@ async def _ask_llm_async(user_message: str, system_message: str, model: str) -> 
         {"role": "user", "content": user_message},
     ]
 
-    llm_response_raw = await acompletion(
-        model=model,
-        messages=messages,
-        temperature=0,
-        max_tokens=1024,
-    )
+    params = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0,
+        "max_tokens": 1024,
+        "reponse_format": {"type": "json_object"},
+    }
+
+    if model.startswith("ollama"):
+        params["api_base"] = LLM_API_BASE
+
+    llm_response_raw = await acompletion(**params)
     logger.info(f"LLM output: {llm_response_raw.choices[0].message.content}")
     return llm_response_raw.choices[0].message.content

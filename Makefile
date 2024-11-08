@@ -92,6 +92,19 @@ setup-redis-windows:
 	@timeout /t 2
 	@docker run --name redis-hew-ai-local -p 6379:6379 -d redis:6.0-alpine
 
+setup-ollama:
+	@docker stop ollama-hew-ai-local || echo "Container not found, skipping stop."
+	@docker rm ollama-hew-ai-local || echo "Container not found, skipping remove."
+	@docker system prune -f
+	@sleep 2
+	@docker run -it --name ollama-hew-ai-local \
+		-v ollama:/root/.ollama -p 11434:11434 \
+		-v $(CURDIR)/deployment/docker-compose/run_ollama.sh:/run_ollama.sh \
+		--entrypoint "/run_ollama.sh" \
+		-d ollama/ollama:latest
+
+
+
 # Teardown Redis (Linux)
 teardown-redis:
 	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
