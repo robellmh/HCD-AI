@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -9,7 +10,7 @@ class ChatUserMessageBase(BaseModel):
     Schema for a user's chat message
     """
 
-    session_id: Optional[str] = None
+    session_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: int
     message: str
 

@@ -2,7 +2,7 @@
 This module contains FastAPI routes for chat
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
@@ -66,4 +66,9 @@ async def get_chat(
     """
 
     chats = await get_chat_history(str(session_id), asession)
+
+    if not chats:
+        raise HTTPException(
+            status_code=404, detail=f"Session id: {session_id} not found"
+        )
     return chats
