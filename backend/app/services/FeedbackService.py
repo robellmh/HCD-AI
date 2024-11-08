@@ -3,7 +3,7 @@ from uuid import UUID
 
 from app.feedback.models import FeedbackModel  # Your ORM model for feedback
 from app.feedback.schemas import Feedback, FeedbackRequest  # Adjusted imports
-from sqlalchemy.exc import NoResultFound
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -71,13 +71,16 @@ class FeedbackService:
         Optional[Feedback]
             The feedback entry if found, else None.
         """
-        query = select(FeedbackModel).where(FeedbackModel.chat_id == chat_id)
-        result = await session.execute(query)
-        feedback = result.scalars().first()
-        if feedback is None:
-            raise NoResultFound("Feedback not found")
+        try:
+            query = select(FeedbackModel).where(FeedbackModel.chat_id == chat_id)
+            result = await session.execute(query)
+            feedback = result.scalars().first()
+            if feedback is None:
+                raise HTTPException(status_code=404, detail="Feedback not found")
 
-        return Feedback.from_orm(feedback)
+            return Feedback.from_orm(feedback)
+        except HTTPException as e:
+            raise e  # Ensure HTTPException is properly propagated
 
     @staticmethod
     async def retrieve_feedback_by_user_name(
