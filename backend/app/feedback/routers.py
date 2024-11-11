@@ -22,7 +22,7 @@ async def submit_feedback(
     """
     This endpoint allows users to submit feedback
     and saves it using the service layer.
-     and saves it using the service layer.
+    and saves it using the service layer.
     """
     try:
         saved_feedback = await FeedbackService.submit_feedback(

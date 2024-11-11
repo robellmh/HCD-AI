@@ -1,7 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -42,7 +41,7 @@ class FeedbackService:
             user_name=feedback_request.user_name,
             chat_id=feedback_request.chat_id,
             feedback_text=feedback_request.feedback_text,
-            like=False,  # Default value, can be adjusted as needed
+            like=feedback_request.like,
         )
         session.add(feedback_model)
         await session.commit()
@@ -77,10 +76,10 @@ class FeedbackService:
             result = await session.execute(query)
             feedback = result.scalars().first()
             if feedback is None:
-                raise HTTPException(status_code=404, detail="Feedback not found")
+                raise ValueError("Feedback not found")
 
             return Feedback.from_orm(feedback)
-        except HTTPException as e:
+        except Exception as e:
             raise e  # Ensure HTTPException is properly propagated
 
     @staticmethod
