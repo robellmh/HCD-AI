@@ -10,3 +10,12 @@ class IngestionResponse(BaseModel):
     file_name: str
     file_id: str
     total_chunks: int
+
+
+class DocumentChunk(BaseModel):
+    """Pydantic model for a document."""
+
+    file_name: str
+    chunk_id: int
+    text: str
+    distance: float

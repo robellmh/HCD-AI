@@ -5,6 +5,8 @@ services:
       - redis
     environment:
       - POSTGRES_HOST=relational_db
+    ports:
+      - "8000:8000"
   relational_db:
     image: pgvector/pgvector:pg16
     restart: always
@@ -14,6 +16,17 @@ services:
       - db_volume:/var/lib/postgresql/data
     ports: # Expose the port to port 5434 on the host machine for debugging
       - 5434:5432
-
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+        - 11434:11434
+    volumes:
+        - ./ollama/ollama:/root/.ollama
+        - ./run_ollama.sh:/run_ollama.sh
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: always
+    entrypoint: ["/usr/bin/bash", "/run_ollama.sh"]
 volumes:
   db_volume:

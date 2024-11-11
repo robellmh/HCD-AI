@@ -22,3 +22,6 @@ PGVECTOR_DISTANCE = os.environ.get("PGVECTOR_DISTANCE", "vector_cosine_ops")
 EMBEDDING_MODEL_NAME = os.environ.get(
     "EMBEDDING_MODEL_NAME", "Alibaba-NLP/gte-base-en-v1.5"
 )  # Update `PGVECTOR_VECTOR_SIZE` accordingly
+
+LLM_MODEL = os.environ.get("LLM_MODEL", "ollama/llama3.2:1b")
+LLM_API_BASE = os.environ.get("LLM_API_BASE", "http://localhost:11434")
