@@ -6,7 +6,7 @@ from ..ingestion.models import DocumentChunk
 from ..llm_utils.prompts import RAG
 from ..utils import remove_json_markdown, setup_logger
 
-logger = setup_logger(__name__)
+logger = setup_logger()
 
 
 async def get_llm_response(
@@ -56,7 +56,7 @@ async def _ask_llm_async(user_message: str, system_message: str, model: str) -> 
         "messages": messages,
         "temperature": 0,
         "max_tokens": 1024,
-        "reponse_format": {"type": "json_object"},
+        "response_format": {"type": "json_object"},
     }
 
     if model.startswith("ollama"):

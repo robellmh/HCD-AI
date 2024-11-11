@@ -22,7 +22,7 @@ services:
         - 11434:11434
     volumes:
         - ./ollama/ollama:/root/.ollama
-        - ./entrypoint.sh:/run_ollama.sh
+        - ./run_ollama.sh:/run_ollama.sh
     container_name: ollama
     pull_policy: always
     tty: true

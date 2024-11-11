@@ -92,7 +92,7 @@ async def get_chat_history(session_id: str, asession: AsyncSession) -> ChatHisto
     )
 
     chat_requests_db = (await asession.execute(stmt_requests)).scalars().all()
-    chat_requests = [ChatUserMessage.from_orm(c) for c in chat_requests_db]
+    chat_requests = [ChatUserMessage.model_validate(c) for c in chat_requests_db]
 
     stmt_responses = (
         select(ChatResponseDB)
