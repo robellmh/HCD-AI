@@ -9,10 +9,10 @@ class RAG(BaseModel):
 
     RAG_FAILURE_MESSAGE: ClassVar[str] = "FAILED"
     RAG_PROFILE_PROMPT: ClassVar[str] = textwrap.dedent(
-        """\
-            You are a helpful question-answering AI. You understand user question and
-            answer their question using the REFERENCE TEXT below.
-            """
+        """
+        You are a helpful question-answering AI. You understand user question and
+        answer their question using the REFERENCE TEXT below.
+        """
     )
 
     RAG_RESPONSE_PROMPT: ClassVar[str] = RAG_PROFILE_PROMPT + textwrap.dedent(
