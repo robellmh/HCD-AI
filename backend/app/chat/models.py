@@ -26,7 +26,8 @@ class ChatRequestDB(Base):
     )
     user_id: Mapped[int] = mapped_column(Integer)
     message: Mapped[str] = mapped_column(String)
-
+    messages_original: Mapped[str] = mapped_column(String, nullable=True)
+    session_summary: Mapped[str] = mapped_column(String, nullable=True)
     response: Mapped["ChatResponseDB"] = relationship(
         "ChatResponseDB", back_populates="request"
     )
@@ -80,10 +81,17 @@ async def save_chat_response(
     return chat_response_db
 
 
-async def get_chat_history(session_id: str, asession: AsyncSession) -> ChatHistory:
+async def get_chat_history(
+    session_id: str | None, asession: AsyncSession
+) -> ChatHistory:
     """
     Get chat history for a session.
+
+    Note: At present it is only retrieving it from Db. To make it
+    more performant, we can cache the chat history in redis.
     """
+    if session_id is None:
+        return []
 
     stmt_requests = (
         select(ChatRequestDB)
@@ -104,7 +112,7 @@ async def get_chat_history(session_id: str, asession: AsyncSession) -> ChatHisto
     )
 
     chat_responses_db = (await asession.execute(stmt_responses)).scalars().all()
-    chat_responses = [ChatResponse.from_orm(c) for c in chat_responses_db]
+    chat_responses = [ChatResponse.model_validate(c) for c in chat_responses_db]
 
     return sorted(
         [*chat_requests, *chat_responses], key=lambda x: x.created_datetime_utc
