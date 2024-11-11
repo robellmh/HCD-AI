@@ -63,7 +63,7 @@ async def get_session_summary(chat_history: ChatHistory, user_message: str) -> s
         ]
     )
 
-    prompt = SummarizeConversationHistory.prompt
+    prompt = SummarizeConversationHistory.prompt.format(context=user_message)
     chat_summary = await _ask_llm_async(all_messages_str, prompt, LLM_MODEL)
 
     logger.error(f"Chat history: {all_messages_str}")

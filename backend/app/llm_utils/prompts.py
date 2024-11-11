@@ -71,13 +71,16 @@ class SummarizeConversationHistory:
     SUMMARY_PROFILE_PROMPT: str = textwrap.dedent(
         """
         You are an accurate conversation summarizer. \
-        Summarize the previous conversation history provided under \
-        CONVERSATION HISTORY in a few short sentences.
+        Summarize the previous conversation history provided \
+        in a few short sentences.
         """
     )
 
     SUMMARY_RESPONSE_PROMPT: str = SUMMARY_PROFILE_PROMPT + textwrap.dedent(
         """
+        Ensure you keep all context necessary to answer the user question:
+
+        {context}
 
         EXAMPLE RESPONSES:
         "User has asked about covid cases in the the district of Delhi. The system
@@ -89,6 +92,8 @@ class SummarizeConversationHistory:
 
 
 class RefineMessageUsingHistory:
+    """Refine a message using conversation history"""
+
     REFINE_PROFILE_PROMPT: str = textwrap.dedent(
         """
         Your job is to reframe the user message to make it less ambigious by
