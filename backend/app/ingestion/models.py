@@ -8,7 +8,7 @@ from typing import Optional
 
 from numpy import ndarray
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,6 +20,7 @@ from ..config import (
 )
 from ..models import Base
 from ..utils import setup_logger
+from .schemas import DocumentChunk
 
 logger = setup_logger()
 
@@ -126,3 +127,40 @@ async def get_document_from_db(
         The DocumentDB instance if found, else None.
     """
     return await asession.get(DocumentDB, content_id)
+
+
+async def get_similar_n_chunks(
+    embeddings: ndarray, n_similar: int, asession: AsyncSession
+) -> dict[int, DocumentChunk]:
+    """
+    Retrieve the n closest documents to the given embedding.
+
+    Parameters
+    ----------
+    embeddings
+        The embedding for which to find the closest documents.
+    n_similar
+        The number of closest documents to retrieve.
+    asession
+        AsyncSession object for database transactions.
+
+    Returns
+    -------
+    dict[int, DocumentChunk]
+        A dictionary containing the closest document chunks.
+    """
+
+    distance = DocumentDB.embedding_vector.cosine_distance(embeddings).label("distance")
+    query = select(DocumentDB, distance).order_by(distance).limit(n_similar)
+    search_results = (await asession.execute(query)).all()
+
+    results_dict = {}
+    for i, r in enumerate(search_results):
+        results_dict[i] = DocumentChunk(
+            file_name=r[0].file_name,
+            chunk_id=r[0].chunk_id,
+            text=r[0].text,
+            distance=r[1],
+        )
+
+    return results_dict

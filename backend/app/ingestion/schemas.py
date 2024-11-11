@@ -29,3 +29,12 @@ class DocumentInfoList(BaseModel):
     """Pydantic model for the list of documents."""
 
     documents: list[DocumentInfo]
+
+
+class DocumentChunk(BaseModel):
+    """Pydantic model for a document."""
+
+    file_name: str
+    chunk_id: int
+    text: str
+    distance: float
