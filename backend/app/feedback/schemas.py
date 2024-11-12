@@ -28,6 +28,7 @@ class FeedbackRequest(BaseModel):
     user_name: str
     chat_id: str
     feedback_text: str
+    like: bool
 
 
 class FeedbackResponse(BaseModel):
