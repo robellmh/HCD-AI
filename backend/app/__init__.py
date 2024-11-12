@@ -4,9 +4,10 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis import asyncio as aioredis
+from sentence_transformers import CrossEncoder
 
 from .chat import router as chat_router
-from .config import REDIS_HOST
+from .config import CROSS_ENCODER_MODEL, REDIS_HOST, USE_CROSS_ENCODER
 from .feedback import router as feedback_router
 from .history import router as history_router
 from .ingestion import router as ingestion_router
@@ -24,6 +25,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     logger.info("Application started")
     app.state.redis = await aioredis.from_url(REDIS_HOST)
+
+    if USE_CROSS_ENCODER == "True":
+        app.state.crossencoder = CrossEncoder(
+            CROSS_ENCODER_MODEL,
+        )
 
     yield
 

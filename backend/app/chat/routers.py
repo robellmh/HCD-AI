@@ -3,17 +3,20 @@ This module contains FastAPI routes for chat
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
+from ..config import USE_CROSS_ENCODER
 from ..database import get_async_session
-from ..ingestion.models import get_similar_n_chunks
+from ..ingestion.models import get_similar_n_chunks, rerank_chunks
 from ..llm_utils.completion import (
     get_llm_response,
     get_refined_message,
     get_session_summary,
 )
 from ..llm_utils.embeddings import create_embeddings
+from .config import N_TOP_CONTENT, N_TOP_RERANK
 from .models import get_chat_history, save_chat_request, save_chat_response
 from .schemas import (
     ChatHistory,
@@ -28,6 +31,7 @@ router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["Chat endpoin
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     chat_request: ChatUserMessageBase,
+    request: Request,
     asession: AsyncSession = Depends(get_async_session),
 ) -> ChatResponse:
     """
@@ -40,8 +44,23 @@ async def chat(
 
     message_embeddings = await create_embeddings(chat_request.message)
     similar_chunks = await get_similar_n_chunks(
-        message_embeddings, n_similar=5, asession=asession
+        message_embeddings, n_similar=N_TOP_CONTENT, asession=asession
     )
+    if USE_CROSS_ENCODER == "True" and (N_TOP_RERANK > N_TOP_CONTENT):
+        raise ValueError(
+            (
+                "N_TOP_RERANK should be less than or equal to N_TOP_CONTENT "
+                "when using cross-encoder"
+            )
+        )
+
+    if USE_CROSS_ENCODER == "True" and len(similar_chunks) > 0:
+        similar_chunks = await rerank_chunks(
+            query_text=chat_request.message,
+            similar_chunks=similar_chunks,
+            request=request,
+            n_top_rerank=N_TOP_RERANK,
+        )
     llm_response = await get_llm_response(
         user_message=chat_request.message,
         session_summary=chat_request.session_summary or "",

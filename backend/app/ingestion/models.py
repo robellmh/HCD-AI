@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
+from fastapi.requests import Request
 from numpy import ndarray
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, Index, Integer, String, Text, select
@@ -163,3 +164,25 @@ async def get_similar_n_chunks(
         )
 
     return results_dict
+
+
+async def rerank_chunks(
+    similar_chunks: dict[int, DocumentChunk],
+    query_text: str,
+    n_top_rerank: int,
+    request: Request,
+) -> dict[int, DocumentChunk]:
+    """
+    This function reranks the chunks using the cross-encoder
+    """
+    encoder = request.app.state.crossencoder
+    contents = similar_chunks.values()
+    scores = encoder.predict([(query_text, content.text) for content in contents])
+
+    print(scores)
+
+    sorted_by_score = [v for _, v in sorted(zip(scores, contents), reverse=True)][
+        :n_top_rerank
+    ]
+
+    return dict(enumerate(sorted_by_score))
