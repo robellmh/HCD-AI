@@ -179,8 +179,6 @@ async def rerank_chunks(
     contents = similar_chunks.values()
     scores = encoder.predict([(query_text, content.text) for content in contents])
 
-    print(scores)
-
     sorted_by_score = [v for _, v in sorted(zip(scores, contents), reverse=True)][
         :n_top_rerank
     ]
