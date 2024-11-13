@@ -39,7 +39,7 @@ async def upload_document(
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to process document: {e}"
+            status_code=400, detail=f"Failed to process document: {e}"
         ) from e
 
     return IngestionResponse(
