@@ -5,7 +5,7 @@ from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 
 from ..config import EMBEDDING_MODEL_NAME
-from .utils import setup_logger
+from ..utils import setup_logger
 
 logger = setup_logger()
 
