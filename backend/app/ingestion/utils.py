@@ -1,10 +1,11 @@
 from io import BytesIO
 
 import PyPDF2
-from app.config import EMBEDDING_MODEL_NAME
-from app.utils import setup_logger
 from numpy import ndarray
 from sentence_transformers import SentenceTransformer
+
+from ..config import EMBEDDING_MODEL_NAME
+from .utils import setup_logger
 
 logger = setup_logger()
 
