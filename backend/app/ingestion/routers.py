@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=IngestionResponse)
+@router.post("/ingestion", response_model=IngestionResponse)
 async def upload_document(
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_async_session),
