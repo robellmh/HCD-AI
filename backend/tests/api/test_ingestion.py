@@ -20,4 +20,3 @@ async def test_ingestion(client: TestClient, filename: str, status: int) -> None
         response = client.post("/ingestion", headers=headers, files=files)
 
     assert response.status_code == status
-    
