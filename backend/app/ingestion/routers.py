@@ -5,7 +5,6 @@ from ..auth.dependencies import authenticate_key
 from ..database import get_async_session
 from ..ingestion.schemas import IngestionResponse
 from ..services.DocumentService import DocumentService
-from .utils import create_embeddings, parse_file
 
 TAG_METADATA = {
     "name": "Document Ingestion",
@@ -29,8 +28,8 @@ async def upload_document(
     file_name = file.filename or "unknown filename"
     try:
         content = await file.read()
-        chunks = await parse_file(content)
-        embeddings = await create_embeddings(chunks)
+        chunks = await DocumentService.parse_file(content)
+        embeddings = await DocumentService.create_embeddings(chunks)
 
         file_id = await DocumentService.save_document(
             text_embeddings=list(zip(chunks, embeddings)),
