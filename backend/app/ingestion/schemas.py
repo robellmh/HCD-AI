@@ -22,6 +22,7 @@ class DocumentInfo(BaseModel):
     total_chunks: int
     created_datetime_utc: datetime
     updated_datetime_utc: datetime
+    is_archived: bool
 
 
 class DocumentInfoList(BaseModel):
