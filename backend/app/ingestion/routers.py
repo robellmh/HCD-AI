@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
 from ..database import get_async_session
-from ..ingestion.schemas import IngestionResponse
+from ..ingestion.schemas import DocumentInfoList, IngestionResponse
 from ..services.DocumentService import DocumentService
 
 TAG_METADATA = {
@@ -44,3 +44,13 @@ async def upload_document(
     return IngestionResponse(
         file_name=file_name, file_id=file_id, total_chunks=len(embeddings)
     )
+
+
+@router.get("/ingestion/list_docs", response_model=DocumentInfoList)
+async def get_doc_list(
+    session: AsyncSession = Depends(get_async_session),
+) -> DocumentInfoList:
+    """
+    Return a list of all documents in the database.
+    """
+    return await DocumentService.list_all_docs(session)

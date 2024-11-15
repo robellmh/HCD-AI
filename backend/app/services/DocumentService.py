@@ -1,15 +1,15 @@
 from datetime import datetime, timezone
-from io import BytesIO
 from typing import List, Optional
 from uuid import uuid4
 
-import PyPDF2
 from numpy import ndarray
-from sentence_transformers import SentenceTransformer
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func, select
 
-from ..config import EMBEDDING_MODEL_NAME
 from ..ingestion.models import DocumentDB
+from ..ingestion.schemas import DocumentInfo, DocumentInfoList
+from ..services.utils.embeddings import create_embeddings
+from ..services.utils.parse_file import parse_file
 from ..utils import setup_logger
 
 logger = setup_logger()
@@ -37,30 +37,7 @@ class DocumentService:
         List[str]
             A list of text chunks extracted from the file.
         """
-        if file[:5] == b"%PDF-":
-            pdf_reader = PyPDF2.PdfReader(BytesIO(file))
-            chunks = []
-            for page_num in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_num]
-                page_text = page.extract_text()
-                if page_text and page_text.strip():
-                    chunks.append(page_text.strip())
-            if not chunks:
-                raise RuntimeError(
-                    "No text could be extracted from the uploaded PDF file."
-                )
-
-        else:
-            # Assume it's text
-            text = file.decode("utf-8")
-            if not text.strip():
-                raise RuntimeError(
-                    "No text could be extracted from the uploaded text file."
-                )
-            chunk_size = 1000
-            chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
-
-        return chunks
+        return await parse_file(file)
 
     @staticmethod
     async def save_document(
@@ -128,14 +105,43 @@ class DocumentService:
         ndarray
             A list of embedding vectors corresponding to each text chunk.
         """
+        return await create_embeddings(chunks)
 
-        embed_model = SentenceTransformer(EMBEDDING_MODEL_NAME, trust_remote_code=True)
-
-        logger.info(
-            f"""Generating embeddings for {len(chunks)} chunks using
-                    async batch processing"""
+    @staticmethod
+    async def list_all_docs(
+        session: AsyncSession,
+    ) -> DocumentInfoList:
+        """
+        List all documents in the database, only returning the name of the file,
+        the total number of chunks associated with it, when it was uploaded,
+        and when it was last updated.
+        """
+        query = select(
+            DocumentDB.file_id,
+            DocumentDB.file_name,
+            DocumentDB.is_archived,
+            func.count(DocumentDB.chunk_id).label("total_chunks"),
+            func.min(DocumentDB.created_datetime_utc).label("created_datetime_utc"),
+            func.max(DocumentDB.updated_datetime_utc).label("updated_datetime_utc"),
+        ).group_by(
+            DocumentDB.file_id,
+            DocumentDB.file_name,
+            DocumentDB.is_archived,
         )
-        embeddings = embed_model.encode(chunks)
-        logger.info("Embeddings generated successfully")
 
-        return embeddings
+        result = await session.execute(query)
+        rows = result.fetchall()
+
+        documents = [
+            DocumentInfo(
+                file_id=row.file_id,
+                file_name=row.file_name,
+                is_archived=row.is_archived,
+                total_chunks=row.total_chunks,
+                created_datetime_utc=row.created_datetime_utc,
+                updated_datetime_utc=row.updated_datetime_utc,
+            )
+            for row in rows
+        ]
+
+        return DocumentInfoList(documents=documents)
