@@ -2,6 +2,7 @@
 serialization."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -38,3 +39,4 @@ class DocumentChunk(BaseModel):
     chunk_id: int
     text: str
     distance: float
+    rerank_score: Optional[float] = None
