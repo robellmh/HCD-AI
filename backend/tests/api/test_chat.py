@@ -8,6 +8,7 @@ from app.chat.models import (
     save_chat_request,
     save_chat_response,
 )
+from app.chat.routers import update_request_using_history
 from app.chat.schemas import ChatResponseBase, ChatUserMessageBase
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
@@ -148,3 +149,32 @@ class TestRetrieveChat:
         response = client.get("/chat/test_session1", headers=headers)
         assert response.status_code == 200
         assert len(response.json()) == 10
+
+
+class TestMultiturnChat:
+    @pytest.mark.parametrize(
+        "session_id, history_exists",
+        [("test_session1", True), ("test_session2", True), ("test_session3", False)],
+    )
+    async def test_chat_history_summary(
+        self,
+        chat_message: ChatUserMessageBase,
+        chat_history: None,
+        session_id: str,
+        history_exists: bool,
+        asession: AsyncSession,
+    ) -> None:
+        chat_message.session_id = session_id
+        original_message = chat_message.message
+        new_message = await update_request_using_history(
+            chat_request=chat_message, asession=asession
+        )
+
+        if history_exists:
+            assert new_message.message_original == original_message
+            assert new_message.message == "fake_refined_message"
+            assert new_message.session_summary == "fake_summary"
+        else:
+            assert new_message.message_original is None
+            assert new_message.message == original_message
+            assert new_message.session_summary is None

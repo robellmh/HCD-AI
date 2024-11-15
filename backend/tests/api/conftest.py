@@ -76,6 +76,14 @@ def patch_llm_call(monkeysession: pytest.MonkeyPatch) -> None:
         async_fake_embedding,
     )
     monkeysession.setattr(app.chat.routers, "get_llm_response", async_fake_llm_response)
+    monkeysession.setattr(
+        app.chat.routers, "get_session_summary", async_get_session_summary
+    )
+    monkeysession.setattr(
+        app.chat.routers,
+        "get_refined_message",
+        async_get_refined_message,
+    )
 
 
 async def async_fake_embedding(chunks: list[str]) -> ndarray:
@@ -90,3 +98,11 @@ async def async_fake_llm_response(*args: list, **kwargs: dict) -> RAG:
         extracted_info=["fake_info1", "fake_info2"],
         answer="fake_answer",
     )
+
+
+async def async_get_session_summary(*args: list, **kwargs: dict) -> str:
+    return "fake_summary"
+
+
+async def async_get_refined_message(*args: list, **kwargs: dict) -> str:
+    return "fake_refined_message"
