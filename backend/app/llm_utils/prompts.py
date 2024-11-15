@@ -11,7 +11,8 @@ class RAG(BaseModel):
     RAG_PROFILE_PROMPT: ClassVar[str] = textwrap.dedent(
         """
         You are a helpful question-answering AI. You understand user question and
-        answer their question using the REFERENCE TEXT below.
+        answer their question using the REFERENCE TEXT below. Use CONVERSATION HISTORY
+        for additional context.
         """
     )
 
@@ -43,6 +44,9 @@ class RAG(BaseModel):
         pinecones and apples and its pinecone-like shape."}}
         {{"extracted_info": [], "answer": "FAILED"}}
 
+        CONVERSATION HISTORY:
+        {session_summary}
+
         REFERENCE TEXT:
         {context}
 
@@ -59,3 +63,59 @@ class RAG(BaseModel):
     answer: str
 
     prompt: ClassVar[str] = RAG_RESPONSE_PROMPT
+
+
+class SummarizeConversationHistory:
+    """Summarize a conversation history"""
+
+    SUMMARY_PROFILE_PROMPT: str = textwrap.dedent(
+        """
+        You are an accurate conversation summarizer. \
+        Summarize the previous conversation history provided \
+        in a few short sentences.
+        """
+    )
+
+    SUMMARY_RESPONSE_PROMPT: str = SUMMARY_PROFILE_PROMPT + textwrap.dedent(
+        """
+        Ensure you keep all context necessary to answer the user question:
+
+        {context}
+
+        EXAMPLE RESPONSES:
+        "User has asked about covid cases in the the district of Delhi. The system
+        responded with the total number of cases in Delhi as 5000."
+        """
+    )
+
+    prompt: str = SUMMARY_RESPONSE_PROMPT
+
+
+class RefineMessageUsingHistory:
+    """Refine a message using conversation history"""
+
+    REFINE_PROFILE_PROMPT: str = textwrap.dedent(
+        """
+        Your job is to reframe the user message to make it less ambigious by
+        replacing pronounce with the actual nouns and adding any missing context
+        from CONVERSATION HISTORY.
+
+        Do not answer the user question, only paraphrase the user message.
+
+        For example:
+        "What is it's capital" -> "What is the capital of India"
+        "Who is the leader of that country" -> "Who is the leader of India"
+        """
+    )
+
+    REFINE_RESPONSE_PROMPT: str = REFINE_PROFILE_PROMPT + textwrap.dedent(
+        """
+        Only return the refined message string without any additional
+        information or preamble.
+
+        CONVERSATION HISTORY:
+        {context}
+        """
+    )
+
+    prompt: str = REFINE_RESPONSE_PROMPT

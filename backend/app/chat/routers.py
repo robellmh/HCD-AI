@@ -8,7 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth.dependencies import authenticate_key
 from ..database import get_async_session
 from ..ingestion.models import get_similar_n_chunks
-from ..llm_utils.completion import get_llm_response
+from ..llm_utils.completion import (
+    get_llm_response,
+    get_refined_message,
+    get_session_summary,
+)
 from ..llm_utils.embeddings import create_embeddings
 from .models import get_chat_history, save_chat_request, save_chat_response
 from .schemas import (
@@ -31,6 +35,7 @@ async def chat(
     and does not retrieve chat history.
     """
 
+    chat_request = await update_request_using_history(chat_request, asession)
     saved_chat_request = await save_chat_request(chat_request, asession)
 
     message_embeddings = await create_embeddings(chat_request.message)
@@ -38,7 +43,9 @@ async def chat(
         message_embeddings, n_similar=5, asession=asession
     )
     llm_response = await get_llm_response(
-        user_message=chat_request.message, similar_chunks=similar_chunks
+        user_message=chat_request.message,
+        session_summary=chat_request.session_summary or "",
+        similar_chunks=similar_chunks,
     )
 
     chat_response_base = ChatResponseBase(
@@ -72,3 +79,23 @@ async def get_chat(
             status_code=404, detail=f"Session id: {session_id} not found"
         )
     return chats
+
+
+async def update_request_using_history(
+    chat_request: ChatUserMessageBase, asession: AsyncSession
+) -> ChatUserMessageBase:
+    """
+    Update chat request using history.
+
+    """
+    chat_history = await get_chat_history(chat_request.session_id, asession)
+    if chat_history:
+        session_summary = await get_session_summary(chat_history, chat_request.message)
+        refined_message = await get_refined_message(
+            session_summary, chat_request.message
+        )
+        chat_request.message_original = chat_request.message
+        chat_request.message = refined_message
+        chat_request.session_summary = session_summary
+
+    return chat_request
