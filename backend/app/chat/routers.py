@@ -54,7 +54,7 @@ async def chat(
             )
         )
 
-    if USE_CROSS_ENCODER == "True" and len(similar_chunks) > 0:
+    if USE_CROSS_ENCODER == "True" and len(similar_chunks) > 1:
         similar_chunks = await rerank_chunks(
             query_text=chat_request.message,
             similar_chunks=similar_chunks,
