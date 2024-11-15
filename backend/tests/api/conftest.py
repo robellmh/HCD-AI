@@ -8,6 +8,7 @@ from app import create_app
 from app.auth.config import API_SECRET_KEY
 from app.config import PGVECTOR_VECTOR_SIZE
 from app.database import get_connection_url
+from app.ingestion.schemas import DocumentChunk
 from app.llm_utils.prompts import RAG
 from fastapi.testclient import TestClient
 from numpy import ndarray
@@ -83,6 +84,16 @@ def patch_llm_call(monkeysession: pytest.MonkeyPatch) -> None:
         "get_refined_message",
         async_get_refined_message,
     )
+    monkeysession.setattr(app.chat.routers, "rerank_chunks", async_fake_rerank_chunks)
+
+
+async def async_fake_rerank_chunks(
+    similar_chunks: dict[int, DocumentChunk], *args: list, **kwargs: dict
+) -> dict[int, DocumentChunk]:
+    """Fake reranking function that returns the same chunks in a different order."""
+
+    random_order = sorted(similar_chunks.keys(), key=lambda x: np.random.rand())
+    return {i: similar_chunks[i] for i in random_order}
 
 
 async def async_fake_embedding(chunks: list[str]) -> ndarray:

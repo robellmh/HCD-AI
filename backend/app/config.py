@@ -25,3 +25,9 @@ EMBEDDING_MODEL_NAME = os.environ.get(
 
 LLM_MODEL = os.environ.get("LLM_MODEL", "ollama/llama3.2:1b")  # or "gpt-4o-mini"
 LLM_API_BASE = os.environ.get("LLM_API_BASE", "http://localhost:11434")
+
+# Cross-encoder
+USE_CROSS_ENCODER = os.environ.get("USE_CROSS_ENCODER", "True")
+CROSS_ENCODER_MODEL = os.environ.get(
+    "CROSS_ENCODER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
+)
