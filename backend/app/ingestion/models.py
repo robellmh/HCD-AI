@@ -179,8 +179,24 @@ async def rerank_chunks(
     contents = similar_chunks.values()
     scores = encoder.predict([(query_text, content.text) for content in contents])
 
-    sorted_by_score = [v for _, v in sorted(zip(scores, contents), reverse=True)][
-        :n_top_rerank
-    ]
+    sorted_by_score = [
+        add_rerank_score(content, score)
+        for score, content in sorted(
+            zip(scores, contents), key=lambda x: x[0], reverse=True
+        )
+    ][:n_top_rerank]
 
     return dict(enumerate(sorted_by_score))
+
+
+def add_rerank_score(content: DocumentChunk, score: float) -> DocumentChunk:
+    """
+    Add the rerank score to the DocumentChunk object.
+    """
+    return DocumentChunk(
+        file_name=content.file_name,
+        chunk_id=content.chunk_id,
+        text=content.text,
+        distance=content.distance,
+        rerank_score=score,
+    )
