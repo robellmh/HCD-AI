@@ -24,6 +24,8 @@ services:
         - ./ollama/ollama:/root/.ollama
         - ./run_ollama.sh:/run_ollama.sh
     container_name: ollama
+    profiles:
+        - ollama
     pull_policy: always
     tty: true
     restart: always
