@@ -19,7 +19,7 @@ nav:
     - index.md
     - Getting Started: getting-started.md
   - Key features:
-    - components/index.md
+    - Components: components/index.md
     - Question-Answering: components/chat.md
     - Document Management: components/doc-management.md
   - Contribute:

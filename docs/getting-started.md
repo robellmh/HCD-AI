@@ -32,7 +32,7 @@ cp template.backend.env .backend.env
 All the variables must be set. The default values will work for a local deployment but should
 be updated when deploying in production.
 
-!!! note "Which LLM to use"
+??? note "Which LLM to use"
     You can either use models available on [Ollama](https://ollama.com) or use OpenAI models.
     Set `LLM_MODEL` to `ollama/<model-name>` to use Ollama models or `openai/<model-name>` to use OpenAI models.
     To use OpenAI models, you also need to set the `OPENAI_API_KEY` in the `.backend.env` file.
@@ -43,7 +43,7 @@ be updated when deploying in production.
 docker compose -f docker-compose.yml -f docker-compose.dev.yml -p hew-ai-stack up -d --build
 ```
 
-!!! note "What components does this start"
+??? note "What components does this start"
     The command will start a stack with a `backend` FastAPI container, a `postgres` database container, a `redis` container. See [dev setup](./contribute/dev-setup.md) for other options
 
 You can now view the the API documentation at
