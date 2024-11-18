@@ -23,6 +23,7 @@ from .schemas import (
     ChatResponse,
     ChatResponseBase,
     ChatUserMessageBase,
+    ChatUserMessageRefined,
 )
 
 router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["Chat endpoints"])
@@ -70,51 +71,55 @@ async def chat(
     chat_response_base = ChatResponseBase(
         response=llm_response.answer,
         request_id=saved_chat_request.request_id,
+        chat_id=saved_chat_request.chat_id,
         response_metadata={
             i: chunk.model_dump() for i, chunk in similar_chunks.items()
         },
     )
 
     saved_chat_response = await save_chat_response(chat_response_base, asession)
-
-    chat_response = ChatResponse.from_orm(saved_chat_response)
+    saved_chat_response_dict = saved_chat_response.__dict__
+    saved_chat_response_dict["chat_id"] = saved_chat_request.chat_id
+    chat_response = ChatResponse(
+        **saved_chat_response_dict,
+    )
 
     return chat_response
 
 
-@router.get("/chat/{session_id}", response_model=ChatHistory)
+@router.get("/chat/{chat_id}", response_model=ChatHistory)
 async def get_chat(
-    session_id: str,
+    chat_id: str,
     asession: AsyncSession = Depends(get_async_session),
 ) -> ChatHistory:
     """
     This endpoint retrieves a chat by chat_id
     """
 
-    chats = await get_chat_history(str(session_id), asession)
+    chats = await get_chat_history(str(chat_id), asession)
 
     if not chats:
-        raise HTTPException(
-            status_code=404, detail=f"Session id: {session_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Session id: {chat_id} not found")
     return chats
 
 
 async def update_request_using_history(
     chat_request: ChatUserMessageBase, asession: AsyncSession
-) -> ChatUserMessageBase:
+) -> ChatUserMessageRefined:
     """
     Update chat request using history.
 
     """
-    chat_history = await get_chat_history(chat_request.session_id, asession)
+
+    char_request_refined = ChatUserMessageRefined.model_validate(chat_request)
+    chat_history = await get_chat_history(chat_request.chat_id, asession)
     if chat_history:
         session_summary = await get_session_summary(chat_history, chat_request.message)
         refined_message = await get_refined_message(
             session_summary, chat_request.message
         )
-        chat_request.message_original = chat_request.message
-        chat_request.message = refined_message
-        chat_request.session_summary = session_summary
+        char_request_refined.message_original = chat_request.message
+        char_request_refined.message = refined_message
+        char_request_refined.session_summary = session_summary
 
-    return chat_request
+    return char_request_refined
