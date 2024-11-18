@@ -68,10 +68,11 @@ be updated when deploying in production.
 
 !!! note
     You can set which language model to use by setting the `LLM_MODEL` environment variable in the `.backend.env` file.
-    If using OpenAI models,
+
+    - If using OpenAI models,
         - Set `LLM_MODEL` to the model name. E.g. `gpt-4o-mini`
         - Set `OPENAI_API_KEY` to your OpenAI API key.
-    If using Ollama models,
+    - If using Ollama models,
         - Set `LLM_MODEL` to `ollama/<model-name>`. E.g. `ollama/llama3.2:1b`
         - Set `LLM_API_BASE` to the base URL of the Ollama API. E.g. `https://my.ollama.server:11434`
 
