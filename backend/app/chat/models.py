@@ -21,7 +21,7 @@ class ChatRequestDB(Base):
     __tablename__ = "chat_requests"
 
     request_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    chat_id: Mapped[str] = mapped_column(String)
+    chat_id: Mapped[str] = mapped_column(String, nullable=False)
     created_datetime_utc: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -52,6 +52,7 @@ class ChatResponseDB(Base):
     request: Mapped["ChatRequestDB"] = relationship(
         "ChatRequestDB", back_populates="response"
     )
+    chat_id: Mapped[str] = mapped_column(String, nullable=False)
 
 
 async def save_chat_request(
@@ -79,6 +80,7 @@ async def save_chat_response(
         request_id=chat_response.request_id,
         response=chat_response.response,
         response_metadata=chat_response.response_metadata,
+        chat_id=chat_response.chat_id,
     )
     asession.add(chat_response_db)
     await asession.commit()

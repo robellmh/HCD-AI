@@ -9,7 +9,11 @@ from app.chat.models import (
     save_chat_response,
 )
 from app.chat.routers import update_request_using_history
-from app.chat.schemas import ChatResponseBase, ChatUserMessageBase
+from app.chat.schemas import (
+    ChatResponseBase,
+    ChatUserMessageBase,
+    ChatUserMessageRefined,
+)
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 @pytest.fixture
 def chat_message() -> ChatUserMessageBase:
     return ChatUserMessageBase(
-        session_id="test_session1", user_id=1, message="test message"
+        chat_id="test_session1", user_id=1, message="test message"
     )
 
 
@@ -58,17 +62,23 @@ async def chat_history(
     await clean_up_chat_history(asession)
 
     for _ in range(5):
-        saved_chat = await save_chat_request(chat_message, asession)
+        refined_chat_message = ChatUserMessageRefined.model_validate(chat_message)
+        saved_chat = await save_chat_request(refined_chat_message, asession)
         chat_response = ChatResponseBase(
-            response="test response 1", request_id=saved_chat.request_id
+            response="test response 1",
+            request_id=saved_chat.request_id,
+            chat_id=saved_chat.chat_id,
         )
         await save_chat_response(chat_response, asession)
 
     for _ in range(3):
-        chat_message.session_id = "test_session2"
-        saved_chat = await save_chat_request(chat_message, asession)
+        chat_message.chat_id = "test_session2"
+        refined_chat_message = ChatUserMessageRefined.model_validate(chat_message)
+        saved_chat = await save_chat_request(refined_chat_message, asession)
         chat_response = ChatResponseBase(
-            response="test response 2", request_id=saved_chat.request_id
+            response="test response 2",
+            request_id=saved_chat.request_id,
+            chat_id=saved_chat.chat_id,
         )
         await save_chat_response(chat_response, asession)
 
@@ -110,7 +120,7 @@ class TestSingleTurnChat:
 
         assert response.status_code == 200
 
-    def test_session_id_not_provided(
+    def test_chat_id_not_provided(
         self,
         client: TestClient,
         chat_message: ChatUserMessageBase,
@@ -118,7 +128,7 @@ class TestSingleTurnChat:
         headers: dict,
     ) -> None:
         message = chat_message.model_dump()
-        message.pop("session_id")
+        message.pop("chat_id")
         response = client.post(
             "/chat",
             headers=headers,
@@ -129,7 +139,7 @@ class TestSingleTurnChat:
 
 
 class TestRetrieveChat:
-    def test_retrieve_nonexistent_session_id(
+    def test_retrieve_nonexistent_chat_id(
         self,
         client: TestClient,
         headers: dict,
@@ -138,7 +148,7 @@ class TestRetrieveChat:
 
         assert response.status_code == 404
 
-    def test_retrieve_correct_session_id(
+    def test_retrieve_correct_chat_id(
         self,
         client: TestClient,
         chat_message: ChatUserMessageBase,
@@ -153,18 +163,18 @@ class TestRetrieveChat:
 
 class TestMultiturnChat:
     @pytest.mark.parametrize(
-        "session_id, history_exists",
+        "chat_id, history_exists",
         [("test_session1", True), ("test_session2", True), ("test_session3", False)],
     )
     async def test_chat_history_summary(
         self,
         chat_message: ChatUserMessageBase,
         chat_history: None,
-        session_id: str,
+        chat_id: str,
         history_exists: bool,
         asession: AsyncSession,
     ) -> None:
-        chat_message.session_id = session_id
+        chat_message.chat_id = chat_id
         original_message = chat_message.message
         new_message = await update_request_using_history(
             chat_request=chat_message, asession=asession

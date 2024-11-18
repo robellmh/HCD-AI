@@ -78,11 +78,7 @@ async def chat(
     )
 
     saved_chat_response = await save_chat_response(chat_response_base, asession)
-    saved_chat_response_dict = saved_chat_response.__dict__
-    saved_chat_response_dict["chat_id"] = saved_chat_request.chat_id
-    chat_response = ChatResponse(
-        **saved_chat_response_dict,
-    )
+    chat_response = ChatResponse.model_validate(saved_chat_response)
 
     return chat_response
 
@@ -111,15 +107,15 @@ async def update_request_using_history(
 
     """
 
-    char_request_refined = ChatUserMessageRefined.model_validate(chat_request)
+    chat_request_refined = ChatUserMessageRefined.model_validate(chat_request)
     chat_history = await get_chat_history(chat_request.chat_id, asession)
     if chat_history:
         session_summary = await get_session_summary(chat_history, chat_request.message)
         refined_message = await get_refined_message(
             session_summary, chat_request.message
         )
-        char_request_refined.message_original = chat_request.message
-        char_request_refined.message = refined_message
-        char_request_refined.session_summary = session_summary
+        chat_request_refined.message_original = chat_request.message
+        chat_request_refined.message = refined_message
+        chat_request_refined.session_summary = session_summary
 
-    return char_request_refined
+    return chat_request_refined
