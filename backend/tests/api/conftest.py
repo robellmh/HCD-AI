@@ -52,7 +52,8 @@ def patch_llm_call(monkeysession: pytest.MonkeyPatch) -> None:
     """Patch the call to the LLM model to return random embeddings"""
 
     monkeysession.setattr(
-        "backend.app.ingestion.routers.create_embeddings", async_fake_embedding
+        "backend.app.services.DocumentService.DocumentService.create_embeddings",
+        async_fake_embedding,
     )
 
 

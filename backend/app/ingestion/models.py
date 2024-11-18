@@ -8,7 +8,7 @@ from typing import Optional
 
 from numpy import ndarray
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Index, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -57,6 +57,7 @@ class DocumentDB(Base):
     updated_datetime_utc: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), onupdate=datetime.now(timezone.utc), nullable=False
     )
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
 async def save_document_to_db(
