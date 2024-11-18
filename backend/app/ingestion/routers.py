@@ -1,68 +1,44 @@
-"""This module contains the FastAPI router for the document handling endpoints."""
-
-from io import BytesIO
-
-import PyPDF2
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from numpy import ndarray
-from sentence_transformers import SentenceTransformer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
-from ..config import EMBEDDING_MODEL_NAME
 from ..database import get_async_session
-from ..utils import setup_logger
-from .models import save_document_to_db
-from .schemas import IngestionResponse
-
-logger = setup_logger()
+from ..ingestion.schemas import DocumentInfoList, IngestionResponse
+from ..services.DocumentService import DocumentService
 
 TAG_METADATA = {
     "name": "Document Ingestion",
-    "description": "Endpoints for ingesting documents.",
+    "description": "Endpoints for uploading and processing documents.",
 }
 
 router = APIRouter(
     dependencies=[Depends(authenticate_key)],
-    prefix="/ingestion",
-    tags=[TAG_METADATA["name"]],
+    tags=["Document Ingestion"],
 )
 
 
-@router.post("/", response_model=IngestionResponse)
+@router.post("/ingestion", response_model=IngestionResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    asession: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_async_session),
 ) -> IngestionResponse:
     """
-    Upload a document, chunk it, embed each chunk,
-    and store embeddings in PostgreSQL using pgvector.
+    Upload and process a document, then store embeddings in the database.
     """
     file_name = file.filename or "unknown filename"
-
     try:
         content = await file.read()
-        chunks = await parse_file(content)
-        logger.info("Document parsed successfully.")
+        chunks = await DocumentService.parse_file(content)
+        embeddings = await DocumentService.create_embeddings(chunks)
 
-        embeddings = await create_embeddings(chunks)
-        logger.info(
-            (
-                f"All chunks embedded successfully for file {file_name}."
-                f"Total chunks: {len(embeddings)}"
-            )
-        )
-
-        file_id = await save_document_to_db(
+        file_id = await DocumentService.save_document(
             text_embeddings=list(zip(chunks, embeddings)),
             file_name=file_name,
-            asession=asession,
+            session=session,
         )
-
     except Exception as e:
-        logger.error(f"Failed to index uploaded file: {e}")
         raise HTTPException(
-            status_code=400, detail=f"Failed to index uploaded file: {e}."
+            status_code=400, detail=f"Failed to process document: {e}"
         ) from e
 
     return IngestionResponse(
@@ -70,68 +46,11 @@ async def upload_document(
     )
 
 
-async def parse_file(file: bytes) -> list[str]:
-    """Parse the content of an uploaded file into chunks.
-
-    For PDFs, each page is treated as its own chunk.
-    For text files, the content is split into chunks of fixed size.
-
-    Parameters
-    ----------
-    file : bytes
-        The content of the uploaded file.
-
-    Returns
-    -------
-    List[str]
-        A list of text chunks extracted from the file.
+@router.get("/ingestion/list_docs", response_model=DocumentInfoList)
+async def get_doc_list(
+    session: AsyncSession = Depends(get_async_session),
+) -> DocumentInfoList:
     """
-    if file[:5] == b"%PDF-":
-        pdf_reader = PyPDF2.PdfReader(BytesIO(file))
-        chunks = []
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            page_text = page.extract_text()
-            if page_text and page_text.strip():
-                chunks.append(page_text.strip())
-        if not chunks:
-            raise RuntimeError("No text could be extracted from the uploaded PDF file.")
-
-    else:
-        # Assume it's text
-        text = file.decode("utf-8")
-        if not text.strip():
-            raise RuntimeError(
-                "No text could be extracted from the uploaded text file."
-            )
-        chunk_size = 1000
-        chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
-
-    return chunks
-
-
-async def create_embeddings(chunks: list[str]) -> ndarray:
+    Return a list of all documents in the database.
     """
-    Create embeddings for a list of text chunks using `sentence_transformers`
-
-    Parameters
-    ----------
-    chunks
-        A list of text chunks.
-
-    Returns
-    -------
-    ndarray
-        A list of embedding vectors corresponding to each text chunk.
-    """
-
-    embed_model = SentenceTransformer(EMBEDDING_MODEL_NAME, trust_remote_code=True)
-
-    logger.info(
-        f"""Generating embeddings for {len(chunks)} chunks using
-                async batch processing"""
-    )
-    embeddings = embed_model.encode(chunks)
-    logger.info("Embeddings generated successfully")
-
-    return embeddings
+    return await DocumentService.list_all_docs(session)
