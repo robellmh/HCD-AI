@@ -28,6 +28,19 @@ services:
     ports: # Expose the port to port 6380 on the host machine for debugging
       - "6380:6379"
     restart: always
-
+  chainlit-app:
+    build:
+      context: ../../chainlit
+      dockerfile: Dockerfile.chainlit
+    ports:
+      - "8500:8500"  # Chainlit default port; adjust if necessary
+    volumes:
+      - .:/app  # Mount your project folder
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    depends_on:
+      - relational_db  # Ensure it waits for the relational_db service to start
 volumes:
   temp:

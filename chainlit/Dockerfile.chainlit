@@ -1,0 +1,26 @@
+# Base image
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Set working directory
+WORKDIR /chainlit-app
+
+# Copy only the Chainlit app's files
+COPY requirements.txt /chainlit-app/requirements.txt
+
+# Install dependencies
+RUN pip install --no-cache-dir -r /chainlit-app/requirements.txt
+
+
+# Copy Chainlit app code
+COPY ./ /chainlit-app/
+
+# Expose the port Chainlit will run on
+EXPOSE 8100
+
+# Command to run Chainlit
+CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "8100"]
