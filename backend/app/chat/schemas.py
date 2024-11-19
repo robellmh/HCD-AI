@@ -10,15 +10,22 @@ class ChatUserMessageBase(BaseModel):
     Schema for a user's chat message
     """
 
-    session_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+    chat_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: int
     message: str
-    message_original: Optional[str] = None
-    session_summary: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 
-class ChatUserMessage(ChatUserMessageBase):
+class ChatUserMessageRefined(ChatUserMessageBase):
+    """
+    Schema for a user's chat message with refined fields
+    """
+
+    message_original: Optional[str] = None
+    session_summary: Optional[str] = None
+
+
+class ChatUserMessage(ChatUserMessageRefined):
     """
     Schema for a user's chat message
     """
@@ -40,7 +47,7 @@ class ChatResponseBase(BaseModel):
     response_metadata: Optional[dict] = Field(
         default_factory=dict, examples=[{"timestamp": "2024-10-16T12:31:00Z"}]
     )
-
+    chat_id: str
     model_config = ConfigDict(from_attributes=True)
 
 

@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         "chat_requests",
         sa.Column("request_id", sa.Integer(), nullable=False),
-        sa.Column("session_id", sa.String(), nullable=False),
+        sa.Column("chat_id", sa.String(), nullable=False),
         sa.Column("created_datetime_utc", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("message", sa.String(), nullable=False),
@@ -36,6 +36,7 @@ def upgrade() -> None:
         sa.Column("created_datetime_utc", sa.DateTime(), nullable=False),
         sa.Column("response", sa.String(), nullable=False),
         sa.Column("response_metadata", sa.JSON(), nullable=True),
+        sa.Column("chat_id", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
             ["request_id"],
             ["chat_requests.request_id"],

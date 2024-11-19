@@ -46,6 +46,7 @@ setup-db: guard-POSTGRES_USER guard-POSTGRES_PASSWORD guard-POSTGRES_DB
 	@docker stop pg-hew-ai-local || echo "Container not found, skipping stop."
 	@docker rm pg-hew-ai-local || echo "Container not found, skipping remove."
 	@docker system prune -f
+	@docker volume prune -f
 	@sleep 2
 	@docker run --name pg-hew-ai-local -e POSTGRES_USER=$(POSTGRES_USER) -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) -e POSTGRES_DB=$(POSTGRES_DB) -p 5432:5432 -d pgvector/pgvector:pg16
 	@sleep 5

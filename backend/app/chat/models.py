@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +11,7 @@ from .schemas import (
     ChatResponse,
     ChatResponseBase,
     ChatUserMessage,
-    ChatUserMessageBase,
+    ChatUserMessageRefined,
 )
 
 
@@ -20,7 +21,7 @@ class ChatRequestDB(Base):
     __tablename__ = "chat_requests"
 
     request_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    session_id: Mapped[str] = mapped_column(String)
+    chat_id: Mapped[str] = mapped_column(String, nullable=False)
     created_datetime_utc: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -51,16 +52,20 @@ class ChatResponseDB(Base):
     request: Mapped["ChatRequestDB"] = relationship(
         "ChatRequestDB", back_populates="response"
     )
+    chat_id: Mapped[str] = mapped_column(String, nullable=False)
 
 
 async def save_chat_request(
-    chat_request: ChatUserMessageBase, asession: AsyncSession
+    chat_request: ChatUserMessageRefined, asession: AsyncSession
 ) -> ChatRequestDB:
     """Save chat request to database"""
+
     chat_request_db = ChatRequestDB(
-        session_id=chat_request.session_id,
+        chat_id=chat_request.chat_id or str(uuid4()),
         user_id=chat_request.user_id,
         message=chat_request.message,
+        messages_original=chat_request.message_original,
+        session_summary=chat_request.session_summary,
     )
     asession.add(chat_request_db)
     await asession.commit()
@@ -75,27 +80,26 @@ async def save_chat_response(
         request_id=chat_response.request_id,
         response=chat_response.response,
         response_metadata=chat_response.response_metadata,
+        chat_id=chat_response.chat_id,
     )
     asession.add(chat_response_db)
     await asession.commit()
     return chat_response_db
 
 
-async def get_chat_history(
-    session_id: str | None, asession: AsyncSession
-) -> ChatHistory:
+async def get_chat_history(chat_id: str | None, asession: AsyncSession) -> ChatHistory:
     """
-    Get chat history for a session.
+    Get chat history for a chat.
 
     Note: At present it is only retrieving it from Db. To make it
     more performant, we can cache the chat history in redis.
     """
-    if session_id is None:
+    if chat_id is None:
         return []
 
     stmt_requests = (
         select(ChatRequestDB)
-        .where(ChatRequestDB.session_id == session_id)
+        .where(ChatRequestDB.chat_id == chat_id)
         .order_by(ChatRequestDB.created_datetime_utc)
     )
 
@@ -105,7 +109,7 @@ async def get_chat_history(
     stmt_responses = (
         select(ChatResponseDB)
         .join(ChatRequestDB)
-        .where(ChatRequestDB.session_id == session_id)
+        .where(ChatRequestDB.chat_id == chat_id)
         .order_by(
             ChatResponseDB.created_datetime_utc,
         )
