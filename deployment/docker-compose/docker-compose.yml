@@ -14,20 +14,11 @@ services:
       - .backend.env
     ports: # Expose backend port
       - 8000:8000
-    environment:
-      - REDIS_HOST=redis://redis:6379
-    depends_on:
-      - redis
     develop:
       watch:
         - action: rebuild
           path: ../../backend
 
-  redis:
-    image: "redis:6.0-alpine"
-    ports: # Expose the port to port 6380 on the host machine for debugging
-      - "6380:6379"
-    restart: always
 
 volumes:
   temp:
