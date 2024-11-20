@@ -12,13 +12,14 @@ sequenceDiagram
     User->>API: POST /chat to ask question
     opt If session_id is passed
         API->>Db: Retrieve chat history if session_id is passed
-        Db-->>API: Return chat hhistory
+        Db-->>API: Return chat history
         API->>LLM: Summarize chat history
         LLM-->>API: Return summary
         API->>LLM: Rephrase question and replace pronouns
         LLM-->>API: Return rephrased questions
     end
-    API->>Vector Db: Retrieve content with closest vectors to question
+    API->>API: Get embeddings for question
+    API->>Vector Db: Retrieve content with closest vectors to question embeddings
     Vector Db-->>API: Return closest vectors
     API->>Cross Encoder: Rerank and return top N content
     Cross Encoder-->>API: Return reranked content

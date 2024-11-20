@@ -12,7 +12,7 @@ There are currently two major groups of endpoints in the API:
 
     [:octicons-arrow-right-24: More info](./doc-management.md)
 
-- :octicons-discussion-closed-16:{ .lg .middle .red} __The Question-Answering Service__
+- :octicons-discussion-closed-16:{ .lg .middle .red} __Question-Answering Service__
 
     ---
 

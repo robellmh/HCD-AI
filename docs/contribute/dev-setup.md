@@ -1,13 +1,13 @@
 Thank you for considering to contribute to this project. This page shows you how to setup your local
 development environment.
 
-### [Optional] Install Docker
+### [Pre-requisite] Install Docker
 
 If you have Docker installed, you can skip this step.
 
 To install Docker, follow the instructions on the [official website](https://docs.docker.com/get-docker/).
 
-### [Optional] Install Docker Compose
+### [Pre-requisite] Install Docker Compose
 
 If you have Docker Compose installed, you can skip this step.
 After installing Docker, you can install Docker Compose by following the instructions on the [official website](https://docs.docker.com/compose/install/).
@@ -93,6 +93,9 @@ Note that this will start the Ollama server on port 11434 with the model you set
 
 You can now view the the API documentation at
 `http://$DOMAIN:8000/docs` (you can also test the endpoints here).
+
+??? note "What my API secret key?"
+    You'll need a secret key to call most of the API endpoints. You can set your API_SECRET_KEY in the `.backend.env` file. If you haven't set it, it will default to `my_secret_key`. You should update this to a more secure value.
 
 ### Stopping the containers
 
