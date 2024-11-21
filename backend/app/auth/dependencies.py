@@ -1,26 +1,74 @@
-from fastapi import Depends, HTTPException, status
+from typing import Optional
+
+from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
+    OAuth2PasswordBearer,
 )
+from jose import JWTError, jwt
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-from .config import API_SECRET_KEY
+from ..database import get_async_session
+from ..users.models import Users
+from .config import ALGORITHM, API_SECRET_KEY, SECRET_KEY
 
-bearer = HTTPBearer()
+api_key_scheme = HTTPBearer(auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login", auto_error=False)
 
 
-async def authenticate_key(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer),
-) -> None:
+async def authenticate_either(
+    token: str = Security(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Security(api_key_scheme),
+    session: AsyncSession = Depends(get_async_session),
+) -> Optional[Users]:
     """
-    Authenticate using basic bearer token. Used for calling
-    the question-answering endpoints. In case the JWT token is
-    provided instead of the API key, it will fall back to JWT
+    This dependency function authenticates users using either JWT or API key."""
+    user: Optional[Users] = None
+    # Try API Key authentication
+    if credentials:
+        api_key = credentials.credentials
+        if api_key == API_SECRET_KEY:
+            # Treat API key users as admin
+            user = Users(user_id="api_key_user", role="admin")
+            return user
+
+    # Try JWT authentication
+    if token:
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("user_id")
+            if user_id:
+                result = await session.execute(
+                    select(Users).where(Users.user_id == user_id)
+                )
+                user = result.scalars().first()
+                if user:
+                    return user  # Return the user object
+        except JWTError:
+            pass  # Invalid JWT token
+
+    # If authentication fails
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+async def get_current_user(user: Users = Depends(authenticate_either)) -> Users:
     """
-    token = credentials.credentials
-    if token != API_SECRET_KEY:
+    This dependency function retrieves the current user."""
+    return user
+
+
+async def require_admin(user: Users = Depends(authenticate_either)) -> Users:
+    """
+    This dependency function checks if the user is an admin."""
+    if user.role != "admin":
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API key",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
         )
+    return user

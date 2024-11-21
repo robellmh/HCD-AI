@@ -1,20 +1,20 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Security, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth.dependencies import authenticate_key
+from ..auth.dependencies import require_admin
 from ..database import get_async_session
 from ..ingestion.schemas import DocumentInfoList, IngestionResponse
 from ..services.DocumentService import DocumentService
+
+router = APIRouter(
+    tags=["Document Ingestion"],
+    dependencies=[Security(require_admin)],
+)
 
 TAG_METADATA = {
     "name": "Document Ingestion",
     "description": "Endpoints for uploading and processing documents.",
 }
-
-router = APIRouter(
-    dependencies=[Depends(authenticate_key)],
-    tags=["Document Ingestion"],
-)
 
 
 @router.post("/ingestion", response_model=IngestionResponse)
