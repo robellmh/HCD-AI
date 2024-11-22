@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserQuery(BaseModel):
@@ -9,11 +9,11 @@ class UserQuery(BaseModel):
     """
 
     query_text: str = Field(..., examples=["How should I check for Jaundice?"])
-    query_metadata: Optional[dict] = Field(
+    query_metadata: Optional[Dict[str, Any]] = Field(
         default_factory=dict, examples=[{"age": "0.5"}]
     )
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SearchResponse(BaseModel):
@@ -27,6 +27,6 @@ class SearchResponse(BaseModel):
             "You should check for Jaundice by checking for yellow eyes and feet."
         ],
     )
-    response_metadata: Optional[dict] = Field(
+    response_metadata: Optional[Dict[str, Any]] = Field(
         default_factory=dict, examples=[{"age": "0.5"}]
     )
