@@ -10,7 +10,7 @@ class UserQuery(BaseModel):
 
     query_text: str = Field(..., examples=["How should I check for Jaundice?"])
     query_metadata: Optional[dict] = Field(
-        default_factory=dict, examples=[{"age": "0.5"}]
+        default_factory=lambda: {}, examples=[{"age": "0.5"}]
     )
 
     model_config = ConfigDict(from_attributes=True)
@@ -28,5 +28,5 @@ class SearchResponse(BaseModel):
         ],
     )
     response_metadata: Optional[dict] = Field(
-        default_factory=dict, examples=[{"age": "0.5"}]
+        default_factory=lambda: {}, examples=[{"age": "0.5"}]  # Fixed here
     )
