@@ -28,12 +28,6 @@ async def create_user(
     """
     Create a new user.
     """
-    try:
-        assert user_data.role in ["admin", "user", None]
-    except AssertionError:
-        HTTPException(
-            detail="Role must be either 'admin' or 'user' or left blank",
-        )
     if user_data.role not in ["admin", "user", None]:
         raise HTTPException(
             status_code=400,
