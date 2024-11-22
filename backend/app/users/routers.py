@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -39,7 +40,13 @@ async def create_user(
     )
 
     session.add(new_user)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(
+            status_code=400, detail="Email already registered"
+        ) from None
     await session.refresh(new_user)
     info = UserOut.model_validate(new_user)
     info.action_taken = "created"
