@@ -62,5 +62,5 @@ conda activate hew-ai
 pre-commit install
 ```
 
-5. Run `make setup-dev` to start containers for postgres and redis locally
+5. Run `make setup-dev` to start containers for postgres
 6. Navigate to `backend` and run `python main.py` to start the FastAPI backend server
