@@ -24,6 +24,7 @@ class UserOut(BaseModel):
     user_id: int
     email: EmailStr
     created_at: datetime
+    action_taken: Optional[str] = None
 
     class Config:
         """
