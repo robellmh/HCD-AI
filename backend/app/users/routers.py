@@ -38,7 +38,7 @@ async def create_user(
         email=user_data.email, role=user_data.role, password=hashed_password
     )
 
-    await session.add(new_user)
+    session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
     info = UserOut.model_validate(new_user)
