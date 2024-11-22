@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,7 +9,7 @@ class UserQuery(BaseModel):
     """
 
     query_text: str = Field(..., examples=["How should I check for Jaundice?"])
-    query_metadata: Optional[Dict[str, Any]] = Field(
+    query_metadata: Optional[dict] = Field(
         default_factory=dict, examples=[{"age": "0.5"}]
     )
 
@@ -27,6 +27,6 @@ class SearchResponse(BaseModel):
             "You should check for Jaundice by checking for yellow eyes and feet."
         ],
     )
-    response_metadata: Optional[Dict[str, Any]] = Field(
+    response_metadata: Optional[dict] = Field(
         default_factory=dict, examples=[{"age": "0.5"}]
     )
