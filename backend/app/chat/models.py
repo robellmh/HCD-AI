@@ -27,7 +27,7 @@ class ChatRequestDB(Base):
     )
     user_id: Mapped[int] = mapped_column(Integer)
     message: Mapped[str] = mapped_column(String)
-    messages_original: Mapped[str] = mapped_column(String, nullable=True)
+    message_original: Mapped[str] = mapped_column(String, nullable=True)
     session_summary: Mapped[str] = mapped_column(String, nullable=True)
     response: Mapped["ChatResponseDB"] = relationship(
         "ChatResponseDB", back_populates="request"
@@ -64,7 +64,7 @@ async def save_chat_request(
         chat_id=chat_request.chat_id or str(uuid4()),
         user_id=chat_request.user_id,
         message=chat_request.message,
-        messages_original=chat_request.message_original,
+        message_original=chat_request.message_original,
         session_summary=chat_request.session_summary,
     )
     asession.add(chat_request_db)

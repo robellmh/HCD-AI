@@ -27,6 +27,8 @@ def upgrade() -> None:
         sa.Column("created_datetime_utc", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("message", sa.String(), nullable=False),
+        sa.Column("message_original", sa.String(), nullable=True),
+        sa.Column("session_summary", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("request_id"),
     )
     op.create_table(
