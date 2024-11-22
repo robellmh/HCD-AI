@@ -8,12 +8,12 @@ from app.chat.models import (
     save_chat_request,
     save_chat_response,
 )
-from app.chat.routers import update_request_using_history
 from app.chat.schemas import (
     ChatResponseBase,
     ChatUserMessageBase,
     ChatUserMessageRefined,
 )
+from app.services.ChatService import ChatService
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -176,7 +176,7 @@ class TestMultiturnChat:
     ) -> None:
         chat_message.chat_id = chat_id
         original_message = chat_message.message
-        new_message = await update_request_using_history(
+        new_message = await ChatService.update_request_using_history(
             chat_request=chat_message, asession=asession
         )
 

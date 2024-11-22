@@ -9,21 +9,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth.dependencies import authenticate_key
 from ..config import USE_CROSS_ENCODER
 from ..database import get_async_session
-from ..ingestion.models import get_similar_n_chunks, rerank_chunks
-from ..llm_utils.completion import (
+from ..services.ChatService import ChatService
+from ..services.DocumentService import DocumentService
+from ..services.utils.completion import (
     get_llm_response,
-    get_refined_message,
-    get_session_summary,
 )
-from ..llm_utils.embeddings import create_embeddings
+from ..services.utils.embeddings import create_embeddings
 from .config import N_TOP_CONTENT, N_TOP_RERANK
-from .models import get_chat_history, save_chat_request, save_chat_response
+from .models import save_chat_request, save_chat_response
 from .schemas import (
     ChatHistory,
     ChatResponse,
     ChatResponseBase,
     ChatUserMessageBase,
-    ChatUserMessageRefined,
 )
 
 router = APIRouter(dependencies=[Depends(authenticate_key)], tags=["Chat endpoints"])
@@ -40,11 +38,13 @@ async def chat(
     and does not retrieve chat history.
     """
 
-    chat_request = await update_request_using_history(chat_request, asession)
+    chat_request = await ChatService.update_request_using_history(
+        chat_request, asession
+    )
     saved_chat_request = await save_chat_request(chat_request, asession)
 
     message_embeddings = await create_embeddings(chat_request.message)
-    similar_chunks = await get_similar_n_chunks(
+    similar_chunks = await DocumentService.get_similar_n_chunks(
         message_embeddings, n_similar=N_TOP_CONTENT, asession=asession
     )
     if USE_CROSS_ENCODER == "True" and (N_TOP_RERANK > N_TOP_CONTENT):
@@ -56,7 +56,7 @@ async def chat(
         )
 
     if USE_CROSS_ENCODER == "True" and len(similar_chunks) > 1:
-        similar_chunks = await rerank_chunks(
+        similar_chunks = await DocumentService.rerank_chunks(
             query_text=chat_request.message,
             similar_chunks=similar_chunks,
             request=request,
@@ -92,30 +92,8 @@ async def get_chat(
     This endpoint retrieves a chat by chat_id
     """
 
-    chats = await get_chat_history(str(chat_id), asession)
+    chats = await ChatService.get_chat_history(str(chat_id), asession)
 
     if not chats:
         raise HTTPException(status_code=404, detail=f"Session id: {chat_id} not found")
     return chats
-
-
-async def update_request_using_history(
-    chat_request: ChatUserMessageBase, asession: AsyncSession
-) -> ChatUserMessageRefined:
-    """
-    Update chat request using history.
-
-    """
-
-    chat_request_refined = ChatUserMessageRefined.model_validate(chat_request)
-    chat_history = await get_chat_history(chat_request.chat_id, asession)
-    if chat_history:
-        session_summary = await get_session_summary(chat_history, chat_request.message)
-        refined_message = await get_refined_message(
-            session_summary, chat_request.message
-        )
-        chat_request_refined.message_original = chat_request.message
-        chat_request_refined.message = refined_message
-        chat_request_refined.session_summary = session_summary
-
-    return chat_request_refined

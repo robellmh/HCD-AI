@@ -1,16 +1,13 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, select
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base, JSONDict
 from .schemas import (
-    ChatHistory,
-    ChatResponse,
     ChatResponseBase,
-    ChatUserMessage,
     ChatUserMessageRefined,
 )
 
@@ -85,39 +82,3 @@ async def save_chat_response(
     asession.add(chat_response_db)
     await asession.commit()
     return chat_response_db
-
-
-async def get_chat_history(chat_id: str | None, asession: AsyncSession) -> ChatHistory:
-    """
-    Get chat history for a chat.
-
-    Note: At present it is only retrieving it from Db. To make it
-    more performant, we can cache the chat history in redis.
-    """
-    if chat_id is None:
-        return []
-
-    stmt_requests = (
-        select(ChatRequestDB)
-        .where(ChatRequestDB.chat_id == chat_id)
-        .order_by(ChatRequestDB.created_datetime_utc)
-    )
-
-    chat_requests_db = (await asession.execute(stmt_requests)).scalars().all()
-    chat_requests = [ChatUserMessage.model_validate(c) for c in chat_requests_db]
-
-    stmt_responses = (
-        select(ChatResponseDB)
-        .join(ChatRequestDB)
-        .where(ChatRequestDB.chat_id == chat_id)
-        .order_by(
-            ChatResponseDB.created_datetime_utc,
-        )
-    )
-
-    chat_responses_db = (await asession.execute(stmt_responses)).scalars().all()
-    chat_responses = [ChatResponse.model_validate(c) for c in chat_responses_db]
-
-    return sorted(
-        [*chat_requests, *chat_responses], key=lambda x: x.created_datetime_utc
-    )

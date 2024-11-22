@@ -1,15 +1,15 @@
 from litellm import acompletion
 from pydantic import ValidationError
 
-from ..chat.schemas import ChatHistory, ChatResponse
-from ..config import LLM_API_BASE, LLM_MODEL
-from ..ingestion.models import DocumentChunk
-from ..llm_utils.prompts import (
+from ...chat.schemas import ChatHistory, ChatResponse
+from ...config import LLM_API_BASE, LLM_MODEL
+from ...ingestion.schemas import DocumentChunk
+from ...utils import remove_json_markdown, setup_logger
+from .prompts import (
     RAG,
     RefineMessageUsingHistory,
     SummarizeConversationHistory,
 )
-from ..utils import remove_json_markdown, setup_logger
 
 logger = setup_logger()
 

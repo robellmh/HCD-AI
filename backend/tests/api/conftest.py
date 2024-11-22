@@ -9,7 +9,7 @@ from app.auth.config import API_SECRET_KEY
 from app.config import PGVECTOR_VECTOR_SIZE
 from app.database import get_connection_url
 from app.ingestion.schemas import DocumentChunk
-from app.llm_utils.prompts import RAG
+from app.services.utils.prompts import RAG
 from fastapi.testclient import TestClient
 from numpy import ndarray
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
@@ -78,14 +78,16 @@ def patch_llm_call(monkeysession: pytest.MonkeyPatch) -> None:
     )
     monkeysession.setattr(app.chat.routers, "get_llm_response", async_fake_llm_response)
     monkeysession.setattr(
-        app.chat.routers, "get_session_summary", async_get_session_summary
+        app.services.ChatService, "get_session_summary", async_get_session_summary
     )
     monkeysession.setattr(
-        app.chat.routers,
+        app.services.ChatService,
         "get_refined_message",
         async_get_refined_message,
     )
-    monkeysession.setattr(app.chat.routers, "rerank_chunks", async_fake_rerank_chunks)
+    monkeysession.setattr(
+        app.chat.routers.DocumentService, "rerank_chunks", async_fake_rerank_chunks
+    )
 
 
 async def async_fake_rerank_chunks(
