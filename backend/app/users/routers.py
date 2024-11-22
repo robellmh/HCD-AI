@@ -1,8 +1,8 @@
-from app.auth.dependencies import authenticate_either
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from ..auth.dependencies import authenticate_either
 from ..database import get_async_session
 from .models import Users
 from .schemas import UserCreate, UserOut
