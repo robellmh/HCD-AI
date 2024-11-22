@@ -48,7 +48,8 @@ class ChatResponse(BaseModel):
         examples=["This is a sample chat response"],
     )
     response_metadata: Optional[dict] = Field(
-        default_factory=dict, examples=[{"timestamp": "2024-10-16T12:31:00Z"}]
+        default_factory=lambda: {},  # Fixed for mypy compatibility
+        examples=[{"timestamp": "2024-10-16T12:31:00Z"}],
     )
 
 
