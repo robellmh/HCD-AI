@@ -76,31 +76,6 @@ teardown-db-windows:
 	@docker stop pg-hew-ai-local || echo "Container not found, skipping stop."
 	@docker rm pg-hew-ai-local || echo "Container not found, skipping remove."
 
-# Setup Redis (Linux)
-setup-redis:
-	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
-	@docker rm redis-hew-ai-local || echo "Container not found, skipping remove."
-	@docker system prune -f
-	@sleep 2
-	@docker run --name redis-hew-ai-local -p 6379:6379 -d redis:6.0-alpine
-
-# Setup Redis (Windows)
-setup-redis-windows:
-	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
-	@docker rm redis-hew-ai-local || echo "Container not found, skipping remove."
-	@docker system prune -f
-	@timeout /t 2
-	@docker run --name redis-hew-ai-local -p 6379:6379 -d redis:6.0-alpine
-
-# Teardown Redis (Linux)
-teardown-redis:
-	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
-	@docker rm redis-hew-ai-local || echo "Container not found, skipping remove."
-
-# Teardown Redis (Windows)
-teardown-redis-windows:
-	@docker stop redis-hew-ai-local || echo "Container not found, skipping stop."
-	@docker rm redis-hew-ai-local || echo "Container not found, skipping remove."
 
 migrate:
 	@echo "Running migration..."
