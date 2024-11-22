@@ -45,9 +45,9 @@ async def authenticate_either(
                 )
                 user = result.scalars().first()
                 if user:
-                    return user  # Return the user object
+                    return user
         except JWTError:
-            pass  # Invalid JWT token
+            pass
 
     # If authentication fails
     raise HTTPException(
