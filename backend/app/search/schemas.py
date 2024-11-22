@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class UserQuery(BaseModel):
@@ -13,7 +13,7 @@ class UserQuery(BaseModel):
         default_factory=dict, examples=[{"age": "0.5"}]
     )
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = {"from_attributes": True}
 
 
 class SearchResponse(BaseModel):
