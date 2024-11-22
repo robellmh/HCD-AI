@@ -15,6 +15,6 @@ sequenceDiagram
     API-->>User: Return file ID
 ```
 
-#### Tip: All ingested documents can be easily viewed with their metadata by querying the `list_docs` `GET` endpoint.
-
-**N.B. Ingestion required administrator priveleges, whilst search will be available to all end users & administrators.**
+#### Tips:
+- All ingested documents can be easily viewed with their metadata by querying the `list_docs` `GET` endpoint.
+- Ingestion required administrator priveleges.
