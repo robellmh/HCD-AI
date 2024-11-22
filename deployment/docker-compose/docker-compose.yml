@@ -22,7 +22,19 @@ services:
       watch:
         - action: rebuild
           path: ../../backend
-
+  chainlit-app:
+    build:
+      context: ../../chainlit
+      dockerfile: Dockerfile.chainlit
+    ports:
+      - "8100:8100"
+    volumes:
+      - .:/app  # Mount your project folder
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - API_URL=http://backend:8000
   redis:
     image: "redis:6.0-alpine"
     ports: # Expose the port to port 6380 on the host machine for debugging
