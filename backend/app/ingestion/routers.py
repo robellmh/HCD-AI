@@ -3,8 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth.dependencies import authenticate_key
 from ..database import get_async_session
-from ..ingestion.schemas import DocumentInfoList, IngestionResponse
 from ..services.DocumentService import DocumentService
+from ..utils import setup_logger
+from .schemas import DocumentInfoList, IngestionResponse
+
+logger = setup_logger()
 
 TAG_METADATA = {
     "name": "Document Ingestion",
