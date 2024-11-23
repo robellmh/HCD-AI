@@ -7,7 +7,7 @@ from ...utils import setup_logger
 logger = setup_logger()
 
 
-async def create_embeddings(chunks: list[str]) -> ndarray:
+async def create_embeddings(chunks: list[str] | str) -> ndarray:
     """
     Create embeddings for a list of text chunks using `sentence_transformers`
 

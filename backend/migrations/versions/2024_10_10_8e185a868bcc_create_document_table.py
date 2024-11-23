@@ -39,7 +39,7 @@ def upgrade() -> None:
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column(
             "embedding_vector",
-            pgvector.sqlalchemy.Vector(dim=PGVECTOR_VECTOR_SIZE),
+            pgvector.sqlalchemy.Vector(dim=int(PGVECTOR_VECTOR_SIZE)),
             nullable=False,
         ),
         sa.Column("created_datetime_utc", sa.DateTime(timezone=True), nullable=False),

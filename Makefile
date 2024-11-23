@@ -46,6 +46,7 @@ setup-db: guard-POSTGRES_USER guard-POSTGRES_PASSWORD guard-POSTGRES_DB
 	@docker stop pg-hew-ai-local || echo "Container not found, skipping stop."
 	@docker rm pg-hew-ai-local || echo "Container not found, skipping remove."
 	@docker system prune -f
+	@docker volume prune -f
 	@sleep 2
 	@docker run --name pg-hew-ai-local -e POSTGRES_USER=$(POSTGRES_USER) -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) -e POSTGRES_DB=$(POSTGRES_DB) -p 5432:5432 -d pgvector/pgvector:pg16
 	@sleep 5
@@ -76,6 +77,16 @@ teardown-db-windows:
 	@docker stop pg-hew-ai-local || echo "Container not found, skipping stop."
 	@docker rm pg-hew-ai-local || echo "Container not found, skipping remove."
 
+setup-ollama:
+	@docker stop ollama-hew-ai-local || echo "Container not found, skipping stop."
+	@docker rm ollama-hew-ai-local || echo "Container not found, skipping remove."
+	@docker system prune -f
+	@sleep 2
+	@docker run -it --name ollama-hew-ai-local \
+		-v ollama:/root/.ollama -p 11434:11434 \
+		-v $(CURDIR)/deployment/docker-compose/run_ollama.sh:/run_ollama.sh \
+		--entrypoint "/run_ollama.sh" \
+		-d ollama/ollama:latest
 
 migrate:
 	@echo "Running migration..."
