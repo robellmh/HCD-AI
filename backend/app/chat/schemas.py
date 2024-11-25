@@ -1,44 +1,40 @@
+import uuid
 from datetime import datetime
 from typing import Optional
-from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class NewChatRequest(BaseModel):
+class ChatUserMessageBase(BaseModel):
     """
-    Schema for starting a new chat
+    Schema for a user's chat message
     """
 
-    user_name: str = Field(..., examples=["John Doe"])
-    created_date_time: datetime = Field(default_factory=datetime.now)
-
+    chat_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: int
+    message: str
     model_config = ConfigDict(from_attributes=True)
 
 
-class Chat(BaseModel):
+class ChatUserMessageRefined(ChatUserMessageBase):
     """
-    Schema for a Chat
-    """
-
-    chat_id: UUID = Field(default_factory=uuid4)
-    user_name: str
-    created_date_time: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AskQuestionRequest(BaseModel):
-    """
-    Schema for asking a question
+    Schema for a user's chat message with refined fields
     """
 
-    question: str = Field(..., examples=["What are the symptoms of diabetes?"])
+    message_original: Optional[str] = None
+    session_summary: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+
+class ChatUserMessage(ChatUserMessageRefined):
+    """
+    Schema for a user's chat message
+    """
+
+    request_id: int
+    created_datetime_utc: datetime
 
 
-class ChatResponse(BaseModel):
+class ChatResponseBase(BaseModel):
     """
     Schema for the response to a user's chat message
     """
@@ -47,29 +43,22 @@ class ChatResponse(BaseModel):
         ...,
         examples=["This is a sample chat response"],
     )
+    request_id: int
     response_metadata: Optional[dict] = Field(
         default_factory=lambda: {},  # Fixed for mypy compatibility
         examples=[{"timestamp": "2024-10-16T12:31:00Z"}],
     )
+    chat_id: str
+    model_config = ConfigDict(from_attributes=True)
 
 
-class AskResponse(BaseModel):
+class ChatResponse(ChatResponseBase):
     """
-    Schema for the response to a user's question
-    """
-
-    answer: str = Field(
-        ...,
-        examples=[
-            "The symptoms of diabetes include increased thirst, "
-            "frequent urination, and fatigue."
-        ],
-    )
-
-
-class ChatDetailResponse(BaseModel):
-    """
-    Schema for the detailed response of a chat
+    Schema for the response to a user's chat message
     """
 
-    chat: Chat
+    response_id: int
+    created_datetime_utc: datetime
+
+
+ChatHistory = list[ChatResponse | ChatUserMessage]

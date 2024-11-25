@@ -2,12 +2,13 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 
+from fastapi import Request
 from numpy import ndarray
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func, select
 
 from ..ingestion.models import DocumentDB
-from ..ingestion.schemas import DocumentInfo, DocumentInfoList
+from ..ingestion.schemas import DocumentChunk, DocumentInfo, DocumentInfoList
 from ..services.utils.embeddings import create_embeddings
 from ..services.utils.parse_file import parse_file
 from ..utils import setup_logger
@@ -145,3 +146,78 @@ class DocumentService:
         ]
 
         return DocumentInfoList(documents=documents)
+
+    @staticmethod
+    async def get_similar_n_chunks(
+        embeddings: ndarray, n_similar: int, asession: AsyncSession
+    ) -> dict[int, DocumentChunk]:
+        """
+        Retrieve the n closest documents to the given embedding.
+
+        Parameters
+        ----------
+        embeddings
+            The embedding for which to find the closest documents.
+        n_similar
+            The number of closest documents to retrieve.
+        asession
+            AsyncSession object for database transactions.
+
+        Returns
+        -------
+        dict[int, DocumentChunk]
+            A dictionary containing the closest document chunks.
+        """
+
+        distance = DocumentDB.embedding_vector.cosine_distance(embeddings).label(
+            "distance"
+        )
+        query = select(DocumentDB, distance).order_by(distance).limit(n_similar)
+        search_results = (await asession.execute(query)).all()
+
+        results_dict = {}
+        for i, r in enumerate(search_results):
+            results_dict[i] = DocumentChunk(
+                file_name=r[0].file_name,
+                chunk_id=r[0].chunk_id,
+                text=r[0].text,
+                distance=r[1],
+            )
+
+        return results_dict
+
+    @staticmethod
+    async def rerank_chunks(
+        similar_chunks: dict[int, DocumentChunk],
+        query_text: str,
+        n_top_rerank: int,
+        request: Request,
+    ) -> dict[int, DocumentChunk]:
+        """
+        This function reranks the chunks using the cross-encoder
+        """
+        encoder = request.app.state.crossencoder
+        contents = similar_chunks.values()
+        scores = encoder.predict([(query_text, content.text) for content in contents])
+
+        sorted_by_score = [
+            DocumentService.add_rerank_score(content, score)
+            for score, content in sorted(
+                zip(scores, contents), key=lambda x: x[0], reverse=True
+            )
+        ][:n_top_rerank]
+
+        return dict(enumerate(sorted_by_score))
+
+    @staticmethod
+    def add_rerank_score(content: DocumentChunk, score: float) -> DocumentChunk:
+        """
+        Add the rerank score to the DocumentChunk object.
+        """
+        return DocumentChunk(
+            file_name=content.file_name,
+            chunk_id=content.chunk_id,
+            text=content.text,
+            distance=content.distance,
+            rerank_score=score,
+        )
