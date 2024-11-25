@@ -1,4 +1,4 @@
-Title: AI for Helath Extension Workers
+Title: AI for Health Extension Workers
 Tags: [actions]
 
 
