@@ -28,5 +28,5 @@ class SearchResponse(BaseModel):
         ],
     )
     response_metadata: Optional[dict] = Field(
-        default_factory=lambda: {}, examples=[{"age": "0.5"}]  # Fixed here
+        default_factory=lambda: {}, examples=[{"age": "0.5"}]
     )

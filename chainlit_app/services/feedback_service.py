@@ -9,7 +9,7 @@ def submit_feedback(user_id: str, feedback: str) -> dict:
     """
     Sends feedback from a user to the feedback API.
 
-    Args:
+    Parameters:
         user_id (str): The user's unique ID.
         feedback (str): The feedback content.
 

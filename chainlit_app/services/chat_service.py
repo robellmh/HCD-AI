@@ -10,7 +10,7 @@ def get_chat_response(user_message: str) -> dict:
     """
     Sends the user's message to the chat API and retrieves the response.
 
-    Args:
+    Parameters:
         user_message (str): The message from the user.
 
     Returns:

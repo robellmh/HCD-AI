@@ -10,7 +10,7 @@ def get_history(user_id: str) -> dict[str, Any]:
     """
     Fetches chat history for a given user ID.
 
-    Args:
+    Parameters:
         user_id (str): The user's unique ID.
 
     Returns:
