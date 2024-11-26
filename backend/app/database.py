@@ -33,7 +33,7 @@ def get_connection_url(
     *,
     db_api: str = ASYNC_DB_API,
     user: str = POSTGRES_USER,
-    hashed_password: str = POSTGRES_PASSWORD,
+    password: str = POSTGRES_PASSWORD,
     host: str = POSTGRES_HOST,
     port: Union[int, str] = POSTGRES_PORT,
     db: str = POSTGRES_DB,
@@ -44,7 +44,7 @@ def get_connection_url(
         drivername="postgresql+" + db_api,
         username=user,
         host=host,
-        hashed_password=hashed_password,
+        password=password,
         port=int(port),
         database=db,
     )
