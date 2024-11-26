@@ -19,9 +19,10 @@ services:
         - action: rebuild
           path: ../../backend
   chainlit-app:
+    container_name: chainlit-frontend
     build:
-      context: ../../chainlit
-      dockerfile: Dockerfile.chainlit
+      context: ../../chainlit_app
+      dockerfile: Dockerfile
     ports:
       - "8100:8100"
     volumes:
