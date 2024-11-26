@@ -45,7 +45,8 @@ class ChatResponseBase(BaseModel):
     )
     request_id: int
     response_metadata: Optional[dict] = Field(
-        default_factory=lambda: {}, examples=[{"timestamp": "2024-10-16T12:31:00Z"}]
+        default_factory=lambda: {},
+        examples=[{"timestamp": "2024-10-16T12:31:00Z"}],
     )
     chat_id: str
     model_config = ConfigDict(from_attributes=True)
