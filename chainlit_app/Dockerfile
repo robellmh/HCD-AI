@@ -1,6 +1,7 @@
 # Base image
 FROM python:3.12-slim
 
+LABEL maintainer="MOH"
 # Set environment variables for better behavior
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
