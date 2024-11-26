@@ -11,6 +11,8 @@ from typing import Sequence, Union
 import sqlalchemy as sa
 from alembic import op
 
+from ...app.users.schemas import RoleEnum
+
 # revision identifiers, used by Alembic.
 revision: str = "d40e086dadb5"
 down_revision: Union[str, None] = "970ae3c2a1b4"
@@ -31,7 +33,7 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
             nullable=False,
         ),
-        sa.Column("role", sa.String(), nullable=True),
+        sa.Column("role", sa.Enum(RoleEnum), nullable=False),
         sa.PrimaryKeyConstraint("user_id"),
         sa.UniqueConstraint("email"),
     )
