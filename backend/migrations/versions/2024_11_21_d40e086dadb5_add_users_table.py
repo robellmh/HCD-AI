@@ -6,12 +6,14 @@ Create Date: 2024-11-21 13:07:40.776402
 
 """
 
+from enum import Enum
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
 
-from ...app.users.schemas import RoleEnum
+# Addded here since can't import from app.users.schemas
+RoleEnum = Enum("RoleEnum", ["admin", "user"])
 
 # revision identifiers, used by Alembic.
 revision: str = "d40e086dadb5"
