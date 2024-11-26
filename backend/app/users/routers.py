@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 
 from ..auth.dependencies import authenticate_either
 from ..database import get_async_session
+from ..users.schemas import RoleEnum
 from .models import Users
 from .schemas import UserCreate, UserOut
 from .utils import hash_password
@@ -29,7 +30,7 @@ async def create_user(
     """
     Create a new user.
     """
-    if user_data.role not in ["admin", "user", None]:
+    if user_data.role not in RoleEnum.__members__:
         raise HTTPException(
             status_code=400,
             detail="Role must be either 'admin' or 'user' or left blank",

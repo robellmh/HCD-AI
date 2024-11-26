@@ -10,6 +10,7 @@ from sqlalchemy.future import select
 
 from ..database import get_async_session
 from ..users.models import Users
+from ..users.schemas import RoleEnum
 from ..utils import setup_logger
 from .config import API_SECRET_KEY, JWT_ALGORITHM, JWT_SECRET_KEY
 
@@ -30,7 +31,7 @@ async def authenticate_either(
     if credentials:
         api_key = credentials.credentials
         if api_key == API_SECRET_KEY:
-            user = Users(user_id="api_key_user", role="admin")
+            user = Users(user_id="api_key_user", role=RoleEnum.ADMIN)
             return user
 
     if token:
@@ -70,7 +71,7 @@ async def require_admin(user: Users = Depends(authenticate_either)) -> Users:
     """
     Ensure the user is an admin.
     """
-    if user.role != "admin":
+    if user.role != RoleEnum.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions",
