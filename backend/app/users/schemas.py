@@ -21,9 +21,7 @@ class UserCreate(BaseModel):
 
     email: str = Field(..., description="The email address of the new user.")
     password: str = Field(..., description="The password of the new user.")
-    role: Optional[str] = Field(
-        None, description="The role of the new user, if applicable."
-    )
+    role: RoleEnum = Field(..., description="The role of the new user.")
 
 
 class UserOut(BaseModel):
