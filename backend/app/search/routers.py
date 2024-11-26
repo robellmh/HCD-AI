@@ -4,13 +4,11 @@ This module contains FastAPI routes for search.
 
 from fastapi import APIRouter, Depends
 
-from ..auth.dependencies import authenticate_either
+from ..auth.dependencies import authenticate_user
 from .schemas import SearchResponse, UserQuery
 
-# Use correct dependency attribute `authenticate_either`.
-router = APIRouter(
-    dependencies=[Depends(authenticate_either)], tags=["Search endpoints"]
-)
+# Use correct dependency attribute `authenticate_user`.
+router = APIRouter(dependencies=[Depends(authenticate_user)], tags=["Search endpoints"])
 
 
 @router.post("/search", response_model=SearchResponse)

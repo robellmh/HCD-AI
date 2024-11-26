@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..auth.dependencies import get_current_user
+from ..auth.dependencies import authenticate_user
 from .schemas import (
     AskQuestionRequest,
     AskResponse,
@@ -17,7 +17,7 @@ from .schemas import (
     NewChatRequest,
 )
 
-router = APIRouter(dependencies=[Depends(get_current_user)], tags=["Chat endpoints"])
+router = APIRouter(dependencies=[Depends(authenticate_user)], tags=["Chat endpoints"])
 
 # In-memory storage for chats (can be replaced with a database in production)
 chats: Dict[UUID, Chat] = {}

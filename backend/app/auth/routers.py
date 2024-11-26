@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 
 from ..auth.schemas import Token
 from ..database import get_async_session
-from ..users.models import Users
+from ..users.models import UsersDB
 from ..users.utils import verify
 from .utils import create_access_token
 
@@ -26,7 +26,7 @@ async def login(
     Login to the application
     """
     result = await session.execute(
-        select(Users).where(Users.email == user_credentials.username)
+        select(UsersDB).where(UsersDB.email == user_credentials.username)
     )
     user = result.scalars().first()
 

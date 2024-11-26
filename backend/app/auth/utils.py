@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette.exceptions import HTTPException
 
-from ..users.models import Users
+from ..users.models import UsersDB
 from ..users.schemas import RoleEnum
 from .config import ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, JWT_SECRET_KEY
 from .schemas import TokenData
@@ -54,7 +54,7 @@ async def verify_access_token(
 
 async def get_current_user(
     session: AsyncSession, token: str, role_check: RoleEnum | None = None
-) -> Users:
+) -> UsersDB:
     """
     Get the current user from the access token.
     """
@@ -64,7 +64,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     token_data = await verify_access_token(token, credentials_exception)
-    statement = select(Users).filter(Users.user_id == token_data.user_id)
+    statement = select(UsersDB).filter(UsersDB.user_id == token_data.user_id)
     result = await session.execute(statement)
     user = result.scalars().first()
 

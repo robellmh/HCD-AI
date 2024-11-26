@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, Integer, String, text
+from sqlalchemy import TIMESTAMP, Boolean, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..models import Base
 
 
-class Users(Base):
+class UsersDB(Base):
     """ORM for managing user information."""
 
     __tablename__ = "users"
@@ -18,3 +18,4 @@ class Users(Base):
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
+    is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

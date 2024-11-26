@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..auth.dependencies import authenticate_either
+from ..auth.dependencies import authenticate_user
 from .schemas import (
     History,
     HistoryResponse,
@@ -15,7 +15,7 @@ from .schemas import (
 )
 
 router = APIRouter(
-    dependencies=[Depends(authenticate_either)], tags=["History endpoints"]
+    dependencies=[Depends(authenticate_user)], tags=["History endpoints"]
 )
 
 # In-memory storage for history (can be replaced with a database in production)

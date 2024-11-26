@@ -3,10 +3,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from ..auth.dependencies import authenticate_either
+from ..auth.dependencies import authenticate_user
 from ..database import get_async_session
+from ..users.models import UsersDB
 from ..users.schemas import RoleEnum
-from .models import Users
 from .schemas import UserCreate, UserOut
 from .utils import hash_password
 
@@ -16,7 +16,7 @@ TAG_METADATA = {
 }
 
 router = APIRouter(
-    dependencies=[Depends(authenticate_either)],
+    dependencies=[Depends(authenticate_user)],
     tags=["User Management"],
     prefix="/users",
 )
@@ -36,7 +36,7 @@ async def create_user(
             detail="Role must be either 'admin' or 'user' or left blank",
         )
     hashed_password = await hash_password(user_data.password)
-    new_user = Users(
+    new_user = UsersDB(
         email=user_data.email, role=user_data.role, password=hashed_password
     )
 
@@ -62,7 +62,7 @@ async def get_user(
     """
     Get a user by user_id.
     """
-    result = await session.execute(select(Users).where(Users.user_id == user_id))
+    result = await session.execute(select(UsersDB).where(UsersDB.user_id == user_id))
     user = result.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -75,13 +75,13 @@ async def delete_user(
     session: AsyncSession = Depends(get_async_session),
 ) -> UserOut:
     """
-    Delete a user by user_id.
+    Soft-delete a user by user_id, setting their is_archived flag to True.
     """
-    result = await session.execute(select(Users).where(Users.user_id == user_id))
+    result = await session.execute(select(UsersDB).where(UsersDB.user_id == user_id))
     user = result.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    await session.delete(user)
+    user.is_archived = True
     await session.commit()
     info = UserOut.model_validate(user)
     info.action_taken = "deleted"
