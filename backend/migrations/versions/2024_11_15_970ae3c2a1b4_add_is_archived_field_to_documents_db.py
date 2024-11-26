@@ -1,4 +1,4 @@
-"""Add is_active field to documents db
+"""Add is_archived field to documents db
 
 Revision ID: 970ae3c2a1b4
 Revises: 5c56714fdbad
