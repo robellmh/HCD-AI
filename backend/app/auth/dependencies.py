@@ -12,7 +12,7 @@ from sqlalchemy.future import select
 
 from ..database import get_async_session
 from ..users.models import Users
-from .config import ALGORITHM, API_SECRET_KEY, SECRET_KEY
+from .config import ALGORITHM, API_SECRET_KEY, JWT_SECRET_KEY
 
 api_key_scheme = HTTPBearer(auto_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login", auto_error=False)
@@ -37,7 +37,7 @@ async def authenticate_either(
     # Try JWT authentication
     if token:
         try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
             user_id = payload.get("user_id")
             if user_id:
                 result = await session.execute(
