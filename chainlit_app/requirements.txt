@@ -1,2 +1,3 @@
 chainlit==1.3.2
-types-requests
+pydantic==2.10.1
+types-requests==2.32.0.20241016
