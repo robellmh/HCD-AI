@@ -40,7 +40,7 @@ async def create_user(
         email=user_data.email, role=user_data.role, password=hashed_password
     )
 
-    session.add(new_user)
+    await session.add(new_user)
     try:
         await session.commit()
     except IntegrityError:
