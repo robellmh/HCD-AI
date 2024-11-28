@@ -1,5 +1,4 @@
 import logging
-import os
 
 import httpx
 from dotenv import load_dotenv
@@ -8,20 +7,25 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_URL = "http://backend:8000"
-# Unexpected error: Invalid port: 'backend'
-API_SECRET_KEY = os.getenv("SECRET_KEY", "my_secret_key")
+API_SECRET_KEY = "my_secret_key"
 
 logging.basicConfig(level=logging.INFO)
 
+# Set a higher timeout value
+TIMEOUT = httpx.Timeout(100.0)  # Adjust as needed
 
-async def get_chat_response(user_id: int, chat_id: str, user_message: str) -> dict:
+
+async def get_chat_response(user_id: str, chat_id: str, user_message: str) -> dict:
+    """
+    Get a response from the chat API.
+    """
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_SECRET_KEY}",
     }
     payload = {
         "chat_id": chat_id,
-        "user_id": 0,
+        "user_id": user_id,
         "message": user_message,
     }
 
@@ -29,22 +33,19 @@ async def get_chat_response(user_id: int, chat_id: str, user_message: str) -> di
     logging.info(f"Headers: {headers}")
     logging.info(f"Payload: {payload}")
 
-    async with httpx.AsyncClient() as client:
-        try:
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             response = await client.post(
-                f"{API_URL}/chat", json=payload, headers=headers
+                f"{API_URL}/chat", headers=headers, json=payload
             )
-            logging.info(f"Response status: {response.status_code}")
-            logging.info(f"Response body: {response.text}")
-
-            response.raise_for_status()  # Raise exception for HTTP errors
-            return response.json()  # Parse JSON response
-        except httpx.HTTPStatusError as e:
-            logging.error(f"HTTP error: {e.response.status_code} - {e.response.text}")
-            return {"error": f"HTTP error: {e.response.status_code}"}
-        except httpx.RequestError as e:
-            logging.error(f"Request error: {e}")
-            return {"error": "Request failed"}
-        except ValueError as e:
-            logging.error(f"Response parsing error: {e}")
-            return {"error": "Invalid response format"}
+            response.raise_for_status()  # Raises an exception for 4xx and 5xx responses
+            data = response.json()
+            return data  # Returns the JSON response as a dictionary
+    except httpx.RequestError as exc:
+        logging.error(f"An error occurred while requesting {API_URL}/chat: {exc}")
+        return {"error": "An error occurred while requesting chat"}
+    except httpx.HTTPStatusError as exc:
+        logging.error(
+            f"HTTP error occurred: {exc.response.status_code} - {exc.response.text}"
+        )
+        return {"error": f"HTTP error occurred: {exc.response.status_code}"}
