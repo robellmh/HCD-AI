@@ -1,10 +1,10 @@
 from datetime import datetime
 
+from app.users.schemas import RoleEnum
 from sqlalchemy import TIMESTAMP, Boolean, Enum, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..models import Base
-from ..users.schemas import RoleEnum
 
 
 class UsersDB(Base):
@@ -18,5 +18,7 @@ class UsersDB(Base):
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
-    role: Mapped[str] = mapped_column(Enum(RoleEnum), nullable=False, default="user")
+    role: Mapped[str] = mapped_column(
+        Enum(RoleEnum), name="role", nullable=False, default="user"
+    )
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

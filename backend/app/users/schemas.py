@@ -1,50 +1,51 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
 
-class RoleEnum(Enum):
+class RoleEnum(str, Enum):
     """
-    Enum representing the possible roles for a user.
+    Enum for user roles.
     """
 
     ADMIN = "admin"
     USER = "user"
 
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     """
-    Class representing the data required to create a new user.
+    Base class for user schemas.
     """
 
-    email: str = Field(..., description="The email address of the new user.")
+    email: EmailStr = Field(..., description="The email address of the user.")
+    role: RoleEnum = Field(..., description="The role of the user.")
+    is_archived: bool = Field(False, description="Indicates if the user is archived.")
+
+
+class UserCreate(UserBase):
+    """
+    Schema for creating a new user.
+    """
+
     password: str = Field(..., description="The password of the new user.")
-    role: RoleEnum = Field(..., description="The role of the new user.")
 
 
-class UserOut(BaseModel):
+class UserOut(UserBase):
     """
-    Class representing the response model for a user.
+    Schema for outputting user information.
     """
 
     user_id: int
-    email: EmailStr
     created_at: datetime
-    action_taken: Optional[str] = None
 
     class Config:
-        """
-        Pydantic configuration for the UserOut model.
-        """
-
-        from_attributes = True
+        orm_mode = True
 
 
 class UserLogin(BaseModel):
     """
-    Class representing the data required to log in a user.
+    Schema for user login.
     """
 
     email: EmailStr
