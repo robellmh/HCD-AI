@@ -2,13 +2,31 @@ import chainlit as cl
 from services.chat_service import get_chat_response
 
 
+@cl.password_auth_callback
+def auth_callback(username: str, password: str) -> None:
+    """
+
+     Fetch the user matching username from your database
+    and compare the hashed password with the value stored in the database
+    """
+    if (username, password) == ("admin", "admin"):
+        return cl.User(
+            identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+        )
+    else:
+        return None
+
+
 @cl.on_chat_start
 async def chat_start() -> None:
     """
-    Triggered when the chat starts. Welcomes the user.
+
+    Triggered when the chat starts. Welcomes the user
+    and gives options to fetch history.
     """
+    app_user = cl.user_session.get("user")
     await cl.Message(
-        content="Welcome! You can ask questions on health services delivery."
+        content=f"Hello, {app_user.identifier}! How can I assist today?"
     ).send()
 
 
