@@ -54,7 +54,7 @@ COPY --from=build /tmp/prometheus /tmp/prometheus
 # Set environment variables
 ENV PYTHONPATH="${PYTHONPATH}:${HOME_DIR}"
 ENV PORT=${PORT}
-
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('Alibaba-NLP/gte-base-en-v1.5', trust_remote_code=True )"
 # Set working directory and expose the port
 WORKDIR ${HOME_DIR}
 EXPOSE ${PORT}
