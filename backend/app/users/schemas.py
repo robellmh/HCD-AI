@@ -38,8 +38,13 @@ class UserOut(UserBase):
 
     user_id: int
     created_at: datetime
+    action_taken: str
 
     class Config:
+        """
+        Configuration for the schema.
+        """
+
         orm_mode = True
 
 
