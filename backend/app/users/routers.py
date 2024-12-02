@@ -84,5 +84,5 @@ async def delete_user(
     user.is_archived = True
     await session.commit()
     info = UserOut.model_validate(user)
-    info.action_taken = "deleted"
+    info.action_taken = "soft-deleted"
     return info
