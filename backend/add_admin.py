@@ -2,7 +2,6 @@ from asyncio import run
 
 from app.database import get_async_session
 from app.users.models import UsersDB
-from app.users.schemas import RoleEnum
 from app.users.utils import hash_password
 from app.utils import setup_logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = setup_logger()
 
 
-async def create_admin_user(email: str, password: str):
+async def create_admin_user(email: str, password: str) -> None:
+    """
+    Add an admin user to the database.
+    """
     session_generator = get_async_session()
     session: AsyncSession = await anext(session_generator)
     try:
@@ -18,7 +20,7 @@ async def create_admin_user(email: str, password: str):
         admin_user = UsersDB(
             email=email,
             hashed_password=hashed_password,
-            role=RoleEnum.ADMIN,
+            role="admin",
             is_archived=False,
         )
         session.add(admin_user)
@@ -28,6 +30,9 @@ async def create_admin_user(email: str, password: str):
 
 
 if __name__ == "__main__":
+    """
+    Add an admin user to the database w/ default creds.
+    """
     run(create_admin_user("admin@me.com", "pass123"))
     logger.info(
         """Admin user created
