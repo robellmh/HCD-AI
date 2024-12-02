@@ -43,11 +43,11 @@ async def create_user(
     await session.add(new_user)
     try:
         await session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         await session.rollback()
         raise HTTPException(
-            status_code=400, detail="Email already registered"
-        ) from None
+            status_code=400, detail="Email already registered. Context: " + str(e)
+        ) from e
     await session.refresh(new_user)
     info = UserOut.model_validate(new_user)
     info.action_taken = "created"
