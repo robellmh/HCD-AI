@@ -29,5 +29,6 @@ COPY ./ /chainlit_app/
 # Expose the port Chainlit will run on
 EXPOSE 8100
 
+ENV CHAINLIT_AUTH_SECRET .4=P6SnNr*P0sf~gzV>tq0*eZ7NoxeVyN50lN_%hVmxF%?wI3OUDV%0p8MsD9jrq
 # Command to run Chainlit
 CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "8100"]
