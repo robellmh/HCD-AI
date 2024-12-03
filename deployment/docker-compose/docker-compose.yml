@@ -12,6 +12,8 @@ services:
     env_file:
       - .base.env
       - .backend.env
+    environment:
+      - CHAINLIT_AUTH_SECRET=.4=P6SnNr*P0sf~gzV>tq0*eZ7NoxeVyN50lN_%hVmxF%?wI3OUDV%0p8MsD9jrq
     ports: # Expose backend port
       - 8000:8000
     develop:

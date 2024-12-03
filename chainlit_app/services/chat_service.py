@@ -1,4 +1,5 @@
 import logging
+import os
 
 import httpx
 from dotenv import load_dotenv
@@ -6,8 +7,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-API_URL = "http://backend:8000"
-API_SECRET_KEY = "my_secret_key"
+API_URL = os.getenv("API_URL", "http://backend:8000")
+API_SECRET_KEY = os.getenv("Secret_key", "my_secret_key")
 
 logging.basicConfig(level=logging.INFO)
 
