@@ -1,51 +1,54 @@
-import logging
-
 import httpx
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from ..config import API_URL
 
-API_URL = "http://backend:8000"
-API_SECRET_KEY = "my_secret_key"
-
-logging.basicConfig(level=logging.INFO)
-
-# Set a higher timeout value
-TIMEOUT = httpx.Timeout(100.0)  # Adjust as needed
+TIMEOUT = httpx.Timeout(100.0)
 
 
-async def get_chat_response(user_id: str, chat_id: str, user_message: str) -> dict:
+class ChatServiceError(Exception):
+    """Custom exception for chat service errors."""
+
+    # Had to add to satisfy MyPY - httpx errors don't derive from
+    # base exception
+    pass
+
+
+async def get_chat_response(
+    chat_session_id: str, user_message: str, token: str
+) -> dict:
     """
-    Get a response from the chat API.
+    Sends an asynchronous POST request to the chat API to retrieve a chat response.
+
+    Parameters:
+    - chat_id (str): The unique identifier for the chat session.
+    - user_message (str): The message from the user to be sent to the chat API.
+    - token (str): The token for authorizing the request against the API.
+
+    Returns:
+    - dict: A dictionary containing the API's response data.
     """
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {API_SECRET_KEY}",
+        "Authorization": f"Bearer {token}",
     }
     payload = {
-        "chat_id": chat_id,
-        "user_id": user_id,
         "message": user_message,
+        "chat_id": chat_session_id,
     }
-
-    logging.info(f"Sending request to {API_URL}/chat")
-    logging.info(f"Headers: {headers}")
-    logging.info(f"Payload: {payload}")
-
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             response = await client.post(
                 f"{API_URL}/chat", headers=headers, json=payload
             )
-            response.raise_for_status()  # Raises an exception for 4xx and 5xx responses
-            data = response.json()
-            return data  # Returns the JSON response as a dictionary
+            response.raise_for_status()
+            return response.json()
+
     except httpx.RequestError as exc:
-        logging.error(f"An error occurred while requesting {API_URL}/chat: {exc}")
-        return {"error": "An error occurred while requesting chat"}
+        raise ChatServiceError(
+            f"An error occurred while requesting chat: {exc}"
+        ) from exc
+
     except httpx.HTTPStatusError as exc:
-        logging.error(
-            f"HTTP error occurred: {exc.response.status_code} - {exc.response.text}"
-        )
-        return {"error": f"HTTP error occurred: {exc.response.status_code}"}
+        raise ChatServiceError(
+            f"HTTP error occurred: {exc.response.status_code} \n{exc.response.text}"
+        ) from exc

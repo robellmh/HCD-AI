@@ -55,7 +55,8 @@ setup-db: guard-POSTGRES_USER guard-POSTGRES_PASSWORD guard-POSTGRES_DB
     source "$(CURDIR)/deployment/docker-compose/.backend.env" && \
     set +a && \
 	cd backend && \
-	python -m alembic upgrade head
+	python -m alembic upgrade head && \
+	python add_admin.py
 
 # Setup PostgreSQL (Windows)
 setup-db-windows: guard-windows-POSTGRES_USER guard-windows-POSTGRES_PASSWORD guard-windows-POSTGRES_DB

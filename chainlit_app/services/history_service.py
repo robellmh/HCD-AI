@@ -1,9 +1,8 @@
-import os
 from typing import Any
 
-import requests
+import requests  # type: ignore
 
-API_URL: str = os.getenv("API_URL", "http://localhost:8000")
+from ..config import API_URL
 
 
 def get_history(user_id: str) -> dict[str, Any]:

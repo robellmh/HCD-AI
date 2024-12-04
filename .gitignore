@@ -160,3 +160,6 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+# Chainlit files
+*/.chainlit/

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth.dependencies import authenticate_key
+from ..auth.dependencies import authenticate_user
 from ..database import get_async_session
 from ..services.DocumentService import DocumentService
 from ..utils import setup_logger
@@ -15,8 +15,7 @@ TAG_METADATA = {
 }
 
 router = APIRouter(
-    dependencies=[Depends(authenticate_key)],
-    tags=["Document Ingestion"],
+    dependencies=[Depends(authenticate_user)], tags=["Ingestion endpoints"]
 )
 
 

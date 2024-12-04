@@ -5,12 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import CrossEncoder
 
+from .auth import router as auth_router
 from .chat import router as chat_router
 from .config import CROSS_ENCODER_MODEL, USE_CROSS_ENCODER
 from .feedback import router as feedback_router
 from .history import router as history_router
 from .ingestion import router as ingestion_router
 from .search import router as search_router
+from .users import router as users_router
 from .utils import setup_logger
 
 logger = setup_logger()
@@ -45,6 +47,8 @@ def create_app() -> FastAPI:
     app.include_router(chat_router)
     app.include_router(history_router)
     app.include_router(feedback_router)
+    app.include_router(users_router)
+    app.include_router(auth_router)
 
     origins = [
         "http://localhost",

@@ -4,13 +4,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..auth.dependencies import authenticate_key
+from ..auth.dependencies import authenticate_user
 from ..database import get_async_session
 from ..services.FeedbackService import FeedbackService
 from .schemas import FeedbackRequest, FeedbackResponse, ListFeedbackResponse
 
 router = APIRouter(
-    dependencies=[Depends(authenticate_key)], tags=["Feedback endpoints"]
+    dependencies=[Depends(authenticate_user)], tags=["Feedback endpoints"]
 )
 
 
