@@ -102,7 +102,9 @@ async def main(message: cl.Message) -> None:
     await cl.Message(content="Processing your request...").send()
 
     # Pass the token and chat session ID to the chat service
-    response = await get_chat_response(str(0), chat_session_id, user_message, token)
+    response = await get_chat_response(
+        chat_session_id=chat_session_id, user_message=user_message, token=token
+    )
 
     if "response" in response:
         await cl.Message(content=response["response"]).send()

@@ -14,7 +14,7 @@ class ChatServiceError(Exception):
 
 
 async def get_chat_response(
-    user_id: str, chat_id: str, user_message: str, token: str
+    chat_session_id: str, user_message: str, token: str
 ) -> dict:
     """
     Sends an asynchronous POST request to the chat API to retrieve a chat response.
@@ -33,9 +33,8 @@ async def get_chat_response(
         "Authorization": f"Bearer {token}",
     }
     payload = {
-        "chat_id": chat_id,
-        "user_id": user_id,
         "message": user_message,
+        "chat_id": chat_session_id,
     }
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
