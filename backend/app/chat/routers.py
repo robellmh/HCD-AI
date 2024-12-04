@@ -13,6 +13,7 @@ from ..services.ChatService import ChatService
 from ..services.DocumentService import DocumentService
 from ..services.utils.completion import get_llm_response
 from ..services.utils.embeddings import create_embeddings
+from ..users.models import UsersDB
 from .config import N_TOP_CONTENT, N_TOP_RERANK
 from .models import save_chat_request, save_chat_response
 from .schemas import ChatHistory, ChatResponse, ChatResponseBase, ChatUserMessageBase
@@ -24,12 +25,16 @@ router = APIRouter(dependencies=[Depends(authenticate_user)], tags=["Chat endpoi
 async def chat(
     chat_request: ChatUserMessageBase,
     request: Request,
+    user: UsersDB = Depends(authenticate_user),
     asession: AsyncSession = Depends(get_async_session),
 ) -> ChatResponse:
     """
     This is the endpoint called for chat. Note that it is currently just a single turn
     and does not retrieve chat history.
     """
+    # use user_id from the token
+    user_id = user.user_id
+    chat_request.user_id = user_id
 
     chat_request = await ChatService.update_request_using_history(
         chat_request, asession
