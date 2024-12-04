@@ -33,7 +33,6 @@ async def auth_callback(username: str, password: str) -> cl.User | None:
                 return cl.User(
                     identifier=username,
                     metadata={
-                        "role": "user",
                         "provider": "jwt",
                         "token": data["access_token"],
                     },
