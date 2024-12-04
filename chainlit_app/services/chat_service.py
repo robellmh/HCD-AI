@@ -20,7 +20,6 @@ async def get_chat_response(
     Sends an asynchronous POST request to the chat API to retrieve a chat response.
 
     Parameters:
-    - user_id (str): The unique identifier for the user requesting the chat.
     - chat_id (str): The unique identifier for the chat session.
     - user_message (str): The message from the user to be sent to the chat API.
     - token (str): The token for authorizing the request against the API.
