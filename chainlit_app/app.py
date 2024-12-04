@@ -3,9 +3,8 @@ import uuid
 import chainlit as cl
 import httpx
 
+from chainlit_app.config import API_URL
 from chainlit_app.services.chat_service import get_chat_response
-
-from .config import API_URL
 
 
 @cl.password_auth_callback
