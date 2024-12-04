@@ -13,7 +13,7 @@ class ChatUserMessageBase(BaseModel):
     chat_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     message: str
     model_config = ConfigDict(from_attributes=True)
-    user_id: Optional[str] = None
+    user_id: Optional[int] = None
 
 
 class ChatUserMessageRefined(ChatUserMessageBase):
