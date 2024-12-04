@@ -2,15 +2,18 @@ import uuid
 
 import chainlit as cl
 import httpx
-from services.chat_service import get_chat_response
+
+from chainlit_app.services.chat_service import get_chat_response
 
 from .config import API_URL
 
 
 @cl.password_auth_callback
-async def auth_callback(username: str, password: str) -> cl.User:
+async def auth_callback(username: str, password: str) -> cl.User | None:
     """
-    Authenticate using a FastAPI endpoint that returns a JWT token.
+    Authenticate by using a FastAPI endpoint that returns a JWT token.
+    Returns a user object with the JWT token if authentication is successful.
+    Otherwise, returns None.
     """
     try:
         async with httpx.AsyncClient() as client:
@@ -52,6 +55,7 @@ async def auth_callback(username: str, password: str) -> cl.User:
             content=f"An error occurred during authentication: {str(e)}"
         ).send()
         return None
+    return None
 
 
 @cl.on_chat_start
@@ -98,7 +102,7 @@ async def main(message: cl.Message) -> None:
     await cl.Message(content="Processing your request...").send()
 
     # Pass the token and chat session ID to the chat service
-    response = await get_chat_response(0, chat_session_id, user_message, token)
+    response = await get_chat_response(str(0), chat_session_id, user_message, token)
 
     if "response" in response:
         await cl.Message(content=response["response"]).send()
