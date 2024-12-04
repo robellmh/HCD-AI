@@ -1,8 +1,6 @@
-import os
+import requests  # type: ignore
 
-import requests
-
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+from ..config import API_URL
 
 
 def submit_feedback(user_id: str, feedback: str) -> dict:
